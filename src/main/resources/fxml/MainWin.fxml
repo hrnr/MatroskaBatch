@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+The MIT License
+
+Copyright 2015 Jiri Horner.
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+-->
+
+<?import javafx.scene.effect.*?>
+<?import javafx.geometry.*?>
+<?import javafx.scene.shape.*?>
+<?import javafx.scene.media.*?>
+<?import java.lang.*?>
+<?import java.util.*?>
+<?import javafx.scene.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.collections.*?>
+<?import cz.hrnr.matroskabatch.track.properties.*?>
+
+<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="570.0" prefWidth="725.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="cz.hrnr.matroskabatch.gui.MainWinController">
+	<center>
+		<AnchorPane prefHeight="200.0" prefWidth="200.0" BorderPane.alignment="CENTER">
+			<children>
+				<TreeView fx:id="mainTree" prefHeight="200.0" prefWidth="200.0" showRoot="false" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+					<contextMenu>
+						<ContextMenu>
+							<items>
+								<MenuItem mnemonicParsing="false" onAction="#treeVRemoveItem" text="Remove" />
+								<MenuItem mnemonicParsing="false" onAction="#treeVAddItem" text="Add Track" />
+							</items>
+						</ContextMenu>
+					</contextMenu>
+				</TreeView>
+			</children>
+		</AnchorPane>
+	</center>
+	<right>
+		<AnchorPane prefHeight="570.0" prefWidth="306.0" BorderPane.alignment="CENTER">
+			<children>
+				<VBox prefHeight="200.0" prefWidth="100.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+					<children>
+						<HBox>
+							<children>
+								<Label prefWidth="100.0" text="Track name:">
+									<HBox.margin>
+										<Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+									</HBox.margin>
+								</Label>
+								<TextField fx:id="txtTrackName" onAction="#propTrackNameChanged">
+									<HBox.margin>
+										<Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+									</HBox.margin>
+								</TextField>
+							</children>
+						</HBox>
+						<HBox>
+							<children>
+								<Label prefWidth="100.0" text="Language:">
+									<HBox.margin>
+										<Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+									</HBox.margin>
+								</Label>
+								<ComboBox fx:id="cbTrackLang" onAction="#propTrackLangChanged" prefHeight="25.0" prefWidth="170.0">
+									<HBox.margin>
+										<Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+									</HBox.margin>
+								</ComboBox>
+							</children>
+						</HBox>
+						<HBox>
+							<children>
+								<Label prefWidth="100.0" text="Default flag:">
+									<HBox.margin>
+										<Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+									</HBox.margin>
+								</Label>
+								<ComboBox fx:id="cbTrackDefaultF" onAction="#propTrackDefaultFChanged" prefHeight="25.0" prefWidth="169.0">
+									<HBox.margin>
+										<Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+									</HBox.margin>
+									<items>
+										<FXCollections fx:factory="observableArrayList">
+											<BoolProperty fx:constant="DEFAULT" />
+											<BoolProperty fx:constant="YES" />
+											<BoolProperty fx:constant="NO" />
+										</FXCollections>
+									</items>
+								</ComboBox>
+							</children>
+						</HBox>
+						<HBox>
+							<children>
+								<Label prefWidth="100.0" text="Forced flag:">
+									<HBox.margin>
+										<Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+									</HBox.margin>
+								</Label>
+								<ComboBox fx:id="cbTrackForcedF" onAction="#propTrackForcedFChanged" prefWidth="170.0">
+									<HBox.margin>
+										<Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+									</HBox.margin>
+									<items>
+										<FXCollections fx:factory="observableArrayList">
+											<BoolProperty fx:constant="NO" />
+											<BoolProperty fx:constant="YES" />
+										</FXCollections>
+									</items>
+								</ComboBox>
+							</children>
+						</HBox>
+					</children>
+				</VBox>
+			</children>
+		</AnchorPane>
+	</right>
+	<top>
+		<MenuBar BorderPane.alignment="CENTER">
+			<menus>
+				<Menu mnemonicParsing="false" text="File">
+					<items>
+						<MenuItem mnemonicParsing="false" onAction="#closeWin" text="Close" />
+					</items>
+				</Menu>
+				<Menu mnemonicParsing="false" text="Edit">
+					<items>
+						<MenuItem mnemonicParsing="false" onAction="#addDirectory" text="Add Directory" />
+						<MenuItem mnemonicParsing="false" onAction="#addFiles" text="Add Files" />
+						<SeparatorMenuItem mnemonicParsing="false" />
+						<MenuItem mnemonicParsing="false" onAction="#treeVRemoveItem" text="Remove" />
+						<MenuItem mnemonicParsing="false" onAction="#treeVAddItem" text="Add Track" />
+						<SeparatorMenuItem mnemonicParsing="false" />
+						<MenuItem mnemonicParsing="false" onAction="#removeAll" text="Remove All" />
+					</items>
+				</Menu>
+				<Menu mnemonicParsing="false" text="Muxing">
+					<items>
+						<MenuItem mnemonicParsing="false" onAction="#setOutputDir" text="Set output directory" />
+						<SeparatorMenuItem mnemonicParsing="false" />
+						<MenuItem fx:id="mnbStartMux" mnemonicParsing="false" onAction="#startMuxing" text="Start muxing" />
+						<MenuItem fx:id="mnbStopMux" disable="true" mnemonicParsing="false" onAction="#stopMuxing" text="Abort muxing" />
+					</items>
+				</Menu>
+				<Menu mnemonicParsing="false" text="Help">
+					<items>
+						<MenuItem mnemonicParsing="false" onAction="#showAbout" text="About" />
+					</items>
+				</Menu>
+			</menus>
+		</MenuBar>
+	</top>
+	<bottom>
+		<AnchorPane BorderPane.alignment="CENTER">
+			<children>
+				<ProgressBar fx:id="pgbBottom" prefWidth="200.0" progress="0.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+			</children>
+		</AnchorPane>
+	</bottom>
+</BorderPane>
