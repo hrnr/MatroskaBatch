@@ -21,9 +21,9 @@ for fine tuning.
 Building
 --------
 
-This project is [maven](apache/maven), but one of it's dependencies is not
+This project is [maven](github.com/apache/maven), but one of it's dependencies is not
 present in maven repository. You have to add it to your local repo manually.
-See [java-string-similarity](rrice/java-string-similarity) or just go with:
+See [java-string-similarity](github.com/rrice/java-string-similarity) or just go with:
 
 	git clone https://github.com/rrice/java-string-similarity.git
 	cd java-string-similarity
