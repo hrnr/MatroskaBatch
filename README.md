@@ -21,10 +21,10 @@ for fine tuning.
 Building
 --------
 
-This project uses [maven](https://github.com/apache/maven) for building, but
-one of it's dependencies is not present in maven repository. You have to add
-it to your local repo manually. See [java-string-
-similarity](https://github.com/rrice/java- string-similarity) or just go with:
+This project uses [maven](http://maven.apache.org/) for building, but one of
+it's dependencies is not present in maven repository. You have to add it to
+your local repo manually. See [java-string-
+similarity](https://github.com/rrice/java-string-similarity) or just go with:
 
 	git clone https://github.com/rrice/java-string-similarity.git
 	cd java-string-similarity
