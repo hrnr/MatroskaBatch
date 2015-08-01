@@ -19,7 +19,6 @@ repositories {
 
 dependencies {
     compile group: 'net.ricecode', name: 'string-similarity', version:'1.0.0'
-    compile group: 'org.controlsfx', name: 'openjfx-dialogs', version:'1.0.2'
 }
 
 javafx {
