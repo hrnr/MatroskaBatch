@@ -2,3 +2,7 @@ target/
 build/
 .gradle/
 .nb-gradle/
+/bin/
+.classpath
+.project
+.settings
