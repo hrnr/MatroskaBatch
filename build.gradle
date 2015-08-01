@@ -1,26 +1,41 @@
-apply plugin: 'java'
-apply plugin: 'application'
-apply from: 'javafx.plugin'
+subprojects {
+	apply plugin: 'java'
 
-group = 'cz.hrnr'
-version = '1.0-SNAPSHOT'
-
-description = """MatroskaBatch"""
-
-sourceCompatibility = 1.8
-targetCompatibility = 1.8
-
-mainClassName = 'cz.hrnr.matroskabatch.gui.MatroskaBatch'
-
-repositories {
-     mavenCentral()
-     mavenLocal()
+	group = 'cz.hrnr'
+	version = '1.0-SNAPSHOT'
+	
+	description = """MatroskaBatch"""
+	
+	sourceCompatibility = 1.8
+	targetCompatibility = 1.8
+	
+	repositories {
+	     mavenCentral()
+	     mavenLocal()
+	}
+	
+	dependencies {
+	    compile group: 'net.ricecode', name: 'string-similarity', version:'1.0.0'
+	}
 }
 
-dependencies {
-    compile group: 'net.ricecode', name: 'string-similarity', version:'1.0.0'
+project(':desktop') {
+	apply plugin: 'application'
+	apply from: 'javafx.plugin'
+	
+	mainClassName = 'cz.hrnr.matroskabatch.gui.MatroskaBatch'
+	
+    javafx {
+		mainClass = mainClassName
+	}
 }
 
-javafx {
-	mainClass = mainClassName
+project(':server') {
+	apply plugin: 'war'
+    war {
+		dependencies {
+	    	compile group: 'org.glassfish.jersey.containers', name: 'jersey-container-servlet', version: '2.19'
+		}
+	}
 }
+
