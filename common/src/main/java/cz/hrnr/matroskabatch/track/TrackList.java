@@ -30,6 +30,7 @@ import java.util.stream.Collectors;
 import javafx.scene.control.TreeItem;
 
 public class TrackList extends ArrayList<Track> {
+	private static final long serialVersionUID = 4847164487852837828L;
 
 	public TrackList(Collection<? extends Track> c) {
 		super(c);
@@ -51,7 +52,7 @@ public class TrackList extends ArrayList<Track> {
 
 	public List<TreeItem<Track>> toTreeList() {
 		return super.stream()
-				.map(x -> new TreeItem<Track>(x, x.getIcon()))
+				.map(x -> new TreeItem<Track>(x))
 				.collect(Collectors.toList());
 	}
 }

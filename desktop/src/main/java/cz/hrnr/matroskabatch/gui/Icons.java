@@ -23,6 +23,7 @@
  */
 package cz.hrnr.matroskabatch.gui;
 
+import cz.hrnr.matroskabatch.track.Track;
 import javafx.scene.image.ImageView;
 
 public class Icons {
@@ -37,5 +38,23 @@ public class Icons {
 
 	public static ImageView getSubtitlesIcon() {
 		return new ImageView("/icons/subtitles.png");
+	}
+	
+	/**
+	 * Gets icon visually representing this track
+	 *
+	 * @return icon appropriate for this track
+	 */
+	public static ImageView getIcon(Track track) {
+		switch (track.getType()) {
+			case VIDEO:
+				return Icons.getVideoIcon();
+			case AUDIO:
+				return Icons.getAudioIcon();
+			case SUBTITLES:
+				return Icons.getSubtitlesIcon();
+			default:
+				return null;
+		}
 	}
 }

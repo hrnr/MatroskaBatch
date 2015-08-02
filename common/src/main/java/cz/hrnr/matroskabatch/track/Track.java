@@ -23,10 +23,8 @@
  */
 package cz.hrnr.matroskabatch.track;
 
-import cz.hrnr.matroskabatch.gui.Icons;
 import java.nio.file.Path;
 import java.util.List;
-import javafx.scene.image.ImageView;
 
 public abstract class Track implements Comparable<Track> {
 
@@ -45,23 +43,9 @@ public abstract class Track implements Comparable<Track> {
 	public String getFileName() {
 		return f_.getFileName().toString();
 	}
-
-	/**
-	 * Gets icon visually representing this track
-	 *
-	 * @return icon appropriate for this track
-	 */
-	public ImageView getIcon() {
-		switch (type_) {
-			case VIDEO:
-				return Icons.getVideoIcon();
-			case AUDIO:
-				return Icons.getAudioIcon();
-			case SUBTITLES:
-				return Icons.getSubtitlesIcon();
-			default:
-				return null;
-		}
+	
+	public TrackType getType() {
+		return type_;
 	}
 
 	@Override
