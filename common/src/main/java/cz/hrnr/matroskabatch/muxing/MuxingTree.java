@@ -32,19 +32,21 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
+
+import org.apache.commons.lang3.StringUtils;
+
 import javafx.scene.control.TreeItem;
-import net.ricecode.similarity.LevenshteinDistanceStrategy;
-import net.ricecode.similarity.StringSimilarityService;
-import net.ricecode.similarity.StringSimilarityServiceImpl;
 
 public final class MuxingTree {
 
 	// maps masterTrack -> subTracks
-	private final HashMap<OutputTrack, TrackList> map_ = new HashMap<>();
+	private final Map<OutputTrack, TrackList> map_ = new HashMap<>();
 	// maps subTrack -> masterTrack
-	private final HashMap<Track, OutputTrack> reverse_map_ = new HashMap<>();
+	private final Map<Track, OutputTrack> reverse_map_ = new HashMap<>();
 
 	private Path outputDir_;
 
@@ -152,12 +154,12 @@ public final class MuxingTree {
 	 * @return true if succeeded false otherwise
 	 */
 	public boolean addSubTrack(Track t) {
-		final StringSimilarityService s = new StringSimilarityServiceImpl(new LevenshteinDistanceStrategy());
 		Optional<OutputTrack> most_similar;
 
+//		compares tracks using fuzzy matching, yields max 
 		most_similar = map_.keySet().stream()
-				.max((x, y) -> (int) ((s.score(x.getFileName(), t.getFileName())
-						- s.score(y.getFileName(), t.getFileName())) * 1000000));
+				.max((x, y) -> StringUtils.getFuzzyDistance(x.getFileName(), t.getFileName(), Locale.getDefault())
+						- StringUtils.getFuzzyDistance(y.getFileName(), t.getFileName(), Locale.getDefault()));
 
 		if (most_similar.isPresent()) {
 			return addSubTrack(most_similar.get(), t);
