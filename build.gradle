@@ -3,53 +3,61 @@ subprojects {
 
 	group = 'cz.hrnr'
 	version = '1.0-SNAPSHOT'
-	
+
 	description = """MatroskaBatch"""
-	
+
 	sourceCompatibility = 1.8
 	targetCompatibility = 1.8
-	
+
 	repositories {
-	     mavenCentral()
-	     mavenLocal()
+		mavenCentral()
+		mavenLocal()
 	}
-	
+
 	dependencies {
-	    compile group: 'net.ricecode', name: 'string-similarity', version:'1.0.0'
+		compile group: 'net.ricecode', name: 'string-similarity', version:'1.0.0'
 	}
+}
+
+project(':common') {
+
 }
 
 project(':desktop') {
 	apply plugin: 'application'
 	apply from: 'javafx.plugin'
-	
+
+	dependencies {
+		compile project(':common')
+	}
+
 	mainClassName = 'cz.hrnr.matroskabatch.gui.MatroskaBatch'
-	
-    javafx {
+
+	javafx {
 		mainClass = mainClassName
 	}
 }
 
 project(':server') {
 	apply plugin: 'war'
-	
+
+	dependencies {
+		compile project(':common')
+		compile group: 'org.glassfish.jersey.containers', name: 'jersey-container-servlet', version: '2.19'
+		compile group: 'org.glassfish.jersey.media', name: 'jersey-media-moxy', version: '2.19'
+	}
+
 	def deployHome = '/var/lib/tomcat8/webapps'
-	
-    war {
-		dependencies {
-	    	compile group: 'org.glassfish.jersey.containers', name: 'jersey-container-servlet', version: '2.19'
-	    	compile group: 'org.glassfish.jersey.media', name: 'jersey-media-moxy', version: '2.19'
-		}
-		
+
+	war {
 		baseName = 'MatroskaBatchServer'
 		webXml = file('src/webapp/WEB-INF/web.xml')
-		
 	}
-	
+
 	task deploy(type: Copy) {
-	    from war
-	    into "${deployHome}"
-	    include '*.war'
-    }
+		from war
+		into "${deployHome}"
+		include '*.war'
+	}
 }
 
