@@ -32,10 +32,24 @@ project(':desktop') {
 
 project(':server') {
 	apply plugin: 'war'
+	
+	def deployHome = '/var/lib/tomcat8/webapps'
+	
     war {
 		dependencies {
 	    	compile group: 'org.glassfish.jersey.containers', name: 'jersey-container-servlet', version: '2.19'
+	    	compile group: 'org.glassfish.jersey.media', name: 'jersey-media-moxy', version: '2.19'
 		}
+		
+		baseName = 'MatroskaBatchServer'
+		webXml = file('src/webapp/WEB-INF/web.xml')
+		
 	}
+	
+	task deploy(type: Copy) {
+	    from war
+	    into "${deployHome}"
+	    include '*.war'
+    }
 }
 
