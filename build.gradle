@@ -13,14 +13,12 @@ subprojects {
 		mavenCentral()
 		mavenLocal()
 	}
-
-	dependencies {
-		compile group: 'net.ricecode', name: 'string-similarity', version:'1.0.0'
-	}
 }
 
 project(':common') {
-
+	dependencies {
+		compile group: 'net.ricecode', name: 'string-similarity', version:'1.0.0'
+	}
 }
 
 project(':desktop') {
