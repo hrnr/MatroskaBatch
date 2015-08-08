@@ -23,30 +23,32 @@
  */
 package cz.hrnr.matroskabatch.muxing;
 
-import cz.hrnr.matroskabatch.track.TrackList;
-import cz.hrnr.matroskabatch.track.OutputTrack;
-import cz.hrnr.matroskabatch.track.Track;
-import cz.hrnr.matroskabatch.mkvmerge.MatroskaMerge;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
 
-import javafx.scene.control.TreeItem;
+import cz.hrnr.matroskabatch.mkvmerge.MatroskaMerge;
+import cz.hrnr.matroskabatch.track.Container;
+import cz.hrnr.matroskabatch.track.MuxingItem;
+import cz.hrnr.matroskabatch.track.Track;
 
 public final class MuxingTree {
 
 	// maps masterTrack -> subTracks
-	private final Map<OutputTrack, TrackList> map_ = new HashMap<>();
+	private final Set<Container> containers_ = new HashSet<>();
 	// maps subTrack -> masterTrack
-	private final Map<Track, OutputTrack> reverse_map_ = new HashMap<>();
+	private final Map<MuxingItem, Container> subtracks_mapping_ = new HashMap<>();
 
 	private Path outputDir_;
 
@@ -57,7 +59,7 @@ public final class MuxingTree {
 	public void setOutputDir(Path outputDir) {
 		outputDir_ = outputDir;
 		// set output for all masterTracks
-		map_.keySet().forEach(x -> x.setOutputDir(outputDir));
+		containers_.forEach(x -> x.setOutputDir(outputDir));
 	}
 
 	/**
@@ -67,31 +69,17 @@ public final class MuxingTree {
 	 * @throws java.io.IOException
 	 */
 	public void addFiles(List<Path> files) throws IOException {
-		// WARNING awful obfuscation happens here
-		// lambdas can't declare exceptions so unchecked exception is thrown and then catched
 		try {
-			// add masterTrack for each video file
-			files.stream()
-					.filter(x -> {
-						try {
-							return MuxingHelpers.isVideo(x);
-						} catch (IOException ex) {
-							throw new RuntimeException();
-						}
-					})
-					.forEach(x -> addMasterTrack(new OutputTrack(outputDir_, x)));
+			for (Path file : files) {
+				// add masterTrack for each video file
+				if (MuxingHelpers.isVideo(file))
+					addMasterTrack(new Container(outputDir_, file));
 
-			// add subtracks
-			files.stream()
-					.forEach(x -> {
-						try {
-							addAllSubTracks(MatroskaMerge.getTracks(x));
-						} catch (IOException | InterruptedException ex) {
-							throw new RuntimeException();
-						}
-					});
-		} catch (RuntimeException ex) {
-			throw new IOException();
+				// add subtracks
+				addAllSubTracks(MatroskaMerge.getTracks(file));
+			}
+		} catch (InterruptedException e) {
+			throw new IOException(e);
 		}
 	}
 
@@ -114,8 +102,8 @@ public final class MuxingTree {
 		return true;
 	}
 
-	public void addMasterTrack(OutputTrack t) {
-		map_.put(t, new TrackList());
+	public void addMasterTrack(Container container) {
+		containers_.add(container);
 	}
 
 	/**
@@ -138,7 +126,7 @@ public final class MuxingTree {
 	 * @param treeTrack
 	 * @param tracks
 	 */
-	public void addAllSubTracks(Track treeTrack, List<Track> tracks) {
+	public void addAllSubTracks(MuxingItem treeTrack, List<Track> tracks) {
 		tracks.forEach(x -> addSubTrack(treeTrack, x));
 	}
 
@@ -154,10 +142,10 @@ public final class MuxingTree {
 	 * @return true if succeeded false otherwise
 	 */
 	public boolean addSubTrack(Track t) {
-		Optional<OutputTrack> most_similar;
+		Optional<Container> most_similar;
 
 //		compares tracks using fuzzy matching, yields max 
-		most_similar = map_.keySet().stream()
+		most_similar = containers_.stream()
 				.max((x, y) -> StringUtils.getFuzzyDistance(x.getFileName(), t.getFileName(), Locale.getDefault())
 						- StringUtils.getFuzzyDistance(y.getFileName(), t.getFileName(), Locale.getDefault()));
 
@@ -175,25 +163,25 @@ public final class MuxingTree {
 	 * if treeTrack is masterTrack
 	 *
 	 * @param treeTrack may be both masterTrack or subTrack
-	 * @param t
+	 * @param track
 	 *
 	 * @return true if succeeded false otherwise
 	 */
-	public boolean addSubTrack(Track treeTrack, Track t) {
+	public boolean addSubTrack(MuxingItem treeTrack, Track track) {
 		// is master track
-		if (map_.containsKey(treeTrack)) {
-			map_.get(treeTrack).add(t);
-			reverse_map_.put(t, (OutputTrack) treeTrack);
-			return true;
-		} else if (reverse_map_.containsKey(treeTrack)) { // is subTrack
-			OutputTrack masterTrack = reverse_map_.get(treeTrack);
-			map_.get(masterTrack).add(t);
-			reverse_map_.put(t, masterTrack);
-			return true;
-		} else // track is not present in tree
-		{
+		Container container;
+
+		if (containers_.contains(treeTrack)) {
+			container = (Container) treeTrack;
+		} else if (subtracks_mapping_.containsKey(treeTrack)) { // is subTrack
+			container = subtracks_mapping_.get(treeTrack);
+		} else { // track is not present in tree
 			return false;
 		}
+
+		container.addChildren(track);
+		subtracks_mapping_.put(track, container);
+		return true;
 	}
 
 	/**
@@ -202,18 +190,20 @@ public final class MuxingTree {
 	 * @param t
 	 * @return true if succeeded false otherwise
 	 */
-	public boolean removeTrack(Track t) {
+	public boolean removeTrack(MuxingItem t) {
 		// is master track
-		if (map_.containsKey(t)) {
-			map_.get(t).stream().forEach(x -> reverse_map_.remove(x));
-			map_.remove(t);
+		if (containers_.contains(t)) {
+			Container container = (Container) t;
+//			remove from reverse mapping
+			container.getChildrenStream().forEach(x -> subtracks_mapping_.remove(x));
+			containers_.remove(container);
 			return true;
-		} else if (reverse_map_.containsKey(t)) { // is subTrack
-			map_.get(reverse_map_.get(t)).remove(t);
-			reverse_map_.remove(t);
+		} else if (subtracks_mapping_.containsKey(t)) { // is subTrack
+			Track track = (Track) t;
+			subtracks_mapping_.get(t).removeChildren(track);
+			subtracks_mapping_.remove(track);
 			return true;
-		} else // track is not present in tree
-		{
+		} else { // track is not present in tree
 			return false;
 		}
 	}
@@ -222,22 +212,16 @@ public final class MuxingTree {
 	 * Removes all tracks from tree
 	 */
 	public void clear() {
-		map_.clear();
-		reverse_map_.clear();
+		containers_.clear();
+		subtracks_mapping_.clear();
 	}
 
 	/**
-	 * Gets tree contents as tree of TreeItems
+	 * Gets contents of MuxingTree as List of containers
 	 *
-	 * @return List of TreeItems -- masterTracks with associated tracks
+	 * @return list of containers
 	 */
-	public List<TreeItem<Track>> getTree() {
-		return map_.keySet().stream()
-				.map(x -> new TreeItem<Track>(x))
-				.peek(x -> {
-					x.getChildren().addAll(map_.get(x.getValue()).toTreeList());
-					x.setExpanded(true);
-				})
-				.collect(Collectors.toList());
+	public List<Container> getMuxingData() {
+		return new ArrayList<>(containers_);
 	}
 }

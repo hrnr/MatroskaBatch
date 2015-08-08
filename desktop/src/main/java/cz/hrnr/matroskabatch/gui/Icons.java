@@ -23,7 +23,7 @@
  */
 package cz.hrnr.matroskabatch.gui;
 
-import cz.hrnr.matroskabatch.track.Track;
+import cz.hrnr.matroskabatch.track.MuxingItem;
 import javafx.scene.image.ImageView;
 
 public class Icons {
@@ -45,7 +45,7 @@ public class Icons {
 	 *
 	 * @return icon appropriate for this track
 	 */
-	public static ImageView getIcon(Track track) {
+	public static ImageView getIcon(MuxingItem track) {
 		switch (track.getType()) {
 			case VIDEO:
 				return Icons.getVideoIcon();

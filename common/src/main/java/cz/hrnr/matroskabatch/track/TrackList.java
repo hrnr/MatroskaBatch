@@ -29,10 +29,10 @@ import java.util.List;
 import java.util.stream.Collectors;
 import javafx.scene.control.TreeItem;
 
-public class TrackList extends ArrayList<Track> {
+public class TrackList extends ArrayList<MuxingItem> {
 	private static final long serialVersionUID = 4847164487852837828L;
 
-	public TrackList(Collection<? extends Track> c) {
+	public TrackList(Collection<? extends MuxingItem> c) {
 		super(c);
 	}
 
@@ -44,15 +44,15 @@ public class TrackList extends ArrayList<Track> {
 	}
 
 	@Override
-	public boolean add(Track t) {
+	public boolean add(MuxingItem t) {
 		boolean success = super.add(t);
 		super.sort(null);
 		return success;
 	}
 
-	public List<TreeItem<Track>> toTreeList() {
+	public List<TreeItem<MuxingItem>> toTreeList() {
 		return super.stream()
-				.map(x -> new TreeItem<Track>(x))
+				.map(x -> new TreeItem<MuxingItem>(x))
 				.collect(Collectors.toList());
 	}
 }

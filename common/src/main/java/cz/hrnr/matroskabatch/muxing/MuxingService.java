@@ -23,12 +23,12 @@
  */
 package cz.hrnr.matroskabatch.muxing;
 
-import cz.hrnr.matroskabatch.mkvmerge.MatroskaMerge;
-import cz.hrnr.matroskabatch.track.OutputTrack;
 import java.io.IOException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.stream.Collectors;
+
+import cz.hrnr.matroskabatch.mkvmerge.MatroskaMerge;
+import cz.hrnr.matroskabatch.track.Container;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.value.ObservableDoubleValue;
@@ -61,25 +61,19 @@ public class MuxingService {
 	 * @param tree
 	 */
 	public void addTree(MuxingTree tree) {
-		tree.getTree()
-				.forEach(x -> {
-					++totalTasks_;
-					service.execute(
-							// Runnable instance here
-							() -> {
-								try {
-									MatroskaMerge.muxTracks(
-											(OutputTrack) x.getValue(),
-											x.getChildren().stream()
-											.map(y -> y.getValue())
-											.collect(Collectors.toList()));
-								} catch (IOException | InterruptedException ex) {
-									System.err.println("Exception occured during muxing");
-								}
-								taskCompleted();
-							});
-				}
-				);
+		for (Container container : tree.getMuxingData()) {
+			++totalTasks_;
+			service.execute(
+				// Runnable instance here
+				() -> {
+					try {
+						MatroskaMerge.muxTracks(container);
+					} catch (IOException | InterruptedException ex) {
+						System.err.println("Exception occured during muxing");
+					}
+					taskCompleted();
+				});
+		}
 	}
 
 	synchronized private void taskCompleted() {

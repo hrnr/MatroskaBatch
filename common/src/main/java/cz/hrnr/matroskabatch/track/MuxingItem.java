@@ -23,39 +23,40 @@
  */
 package cz.hrnr.matroskabatch.track;
 
-import java.io.File;
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.List;
 
-public final class InputTrack extends Track {
+public abstract class MuxingItem implements Comparable<MuxingItem> {
 
-	int trackID_ = 0;
+	protected Path f_;
+	protected TrackProperties properties_;
+	protected TrackType type_;
 
-	public InputTrack(Path path, int trackID, TrackType type, TrackProperties properties) {
-		f_ = path;
-		properties_ = properties;
-		type_ = type;
-		trackID_ = trackID;
+	public String getFullPath() {
+		return f_.toAbsolutePath().toString();
 	}
 
-	public void setPath(String path) {
-		f_ = new File(path).toPath();
+	public String getFileName() {
+		return f_.getFileName().toString();
+	}
+
+	public TrackProperties getProperties() {
+		return properties_;
+	}
+
+	public TrackType getType() {
+		return type_;
 	}
 
 	@Override
-	public List<String> toCmdLine() {
-		List<String> cmdline = new ArrayList<>();
-
-		// header: track definition
-		cmdline.addAll(type_.toCmdLine(trackID_));
-
-		// properties
-		cmdline.addAll(properties_.toCmdLine(trackID_));
-
-		// source file
-		cmdline.add(f_.toAbsolutePath().toString());
-
-		return cmdline;
+	public int compareTo(MuxingItem o) {
+		return type_.getNumVal() - o.type_.getNumVal();
 	}
+
+	@Override
+	public String toString() {
+		return (type_ != TrackType.CONTAINER ? type_ + ": " : "") + getFileName() + " | " + getFullPath();
+	}
+
+	public abstract List<String> toCmdLine();
 }

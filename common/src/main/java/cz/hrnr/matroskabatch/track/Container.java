@@ -23,16 +23,23 @@
  */
 package cz.hrnr.matroskabatch.track;
 
-import cz.hrnr.matroskabatch.muxing.MuxingHelpers;
 import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
+import java.util.stream.Stream;
 
-public final class OutputTrack extends Track {
+import cz.hrnr.matroskabatch.muxing.MuxingHelpers;
+
+public final class Container extends MuxingItem {
 
 	private final Path originalFileName_;
+	private Set<Track> tracks_;
 
 	/**
 	 * Creates new OutputTrack
@@ -42,10 +49,11 @@ public final class OutputTrack extends Track {
 	 * @param outputDir
 	 * @param inputFile
 	 */
-	public OutputTrack(Path outputDir, Path inputFile) {
+	public Container(Path outputDir, Path inputFile) {
 		originalFileName_ = new File(inputFile.toUri()).toPath();
 		properties_ = null;
 		type_ = TrackType.CONTAINER;
+		tracks_ = new TreeSet<>();
 		setOutputDir(outputDir);
 	}
 
@@ -58,5 +66,25 @@ public final class OutputTrack extends Track {
 	@Override
 	public List<String> toCmdLine() {
 		return Arrays.asList("-o", f_.toAbsolutePath().toString());
+	}
+
+	public void addChildren(Track t) {
+		tracks_.add(t);
+	}
+
+	public void removeChildren(Track t) {
+		tracks_.remove(t);
+	}
+
+	public Collection<Track> getChildren() {
+		return tracks_;
+	}
+
+	public List<Track> getChildrenAsList() {
+		return new ArrayList<>(tracks_);
+	}
+
+	public Stream<Track> getChildrenStream() {
+		return tracks_.stream();
 	}
 }

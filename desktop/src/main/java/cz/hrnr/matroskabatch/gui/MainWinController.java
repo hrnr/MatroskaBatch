@@ -23,19 +23,21 @@
  */
 package cz.hrnr.matroskabatch.gui;
 
-import cz.hrnr.matroskabatch.mkvmerge.MatroskaMerge;
-import cz.hrnr.matroskabatch.muxing.MuxingService;
-import cz.hrnr.matroskabatch.muxing.MuxingTree;
-import cz.hrnr.matroskabatch.track.Track;
-import cz.hrnr.matroskabatch.track.TrackProperties;
-import cz.hrnr.matroskabatch.track.properties.BoolProperty;
-import cz.hrnr.matroskabatch.track.properties.LangProperty;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.List;
 import java.util.ResourceBundle;
 import java.util.stream.Collectors;
+
+import cz.hrnr.matroskabatch.mkvmerge.MatroskaMerge;
+import cz.hrnr.matroskabatch.muxing.MuxingService;
+import cz.hrnr.matroskabatch.muxing.MuxingTree;
+import cz.hrnr.matroskabatch.track.Container;
+import cz.hrnr.matroskabatch.track.MuxingItem;
+import cz.hrnr.matroskabatch.track.TrackProperties;
+import cz.hrnr.matroskabatch.track.properties.BoolProperty;
+import cz.hrnr.matroskabatch.track.properties.LangProperty;
 import javafx.application.Platform;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
@@ -57,7 +59,7 @@ public class MainWinController implements Initializable {
 	private MuxingService ms = new MuxingService();
 
 	@FXML
-	private TreeView<Track> mainTree;
+	private TreeView<MuxingItem> mainTree;
 
 	@FXML
 	private TextField txtTrackName;
@@ -110,7 +112,7 @@ public class MainWinController implements Initializable {
 
 	@FXML
 	private void treeVRemoveItem(ActionEvent e) {
-		TreeItem<Track> selected = mainTree.getSelectionModel().getSelectedItem();
+		TreeItem<MuxingItem> selected = mainTree.getSelectionModel().getSelectedItem();
 		if (selected != null) {
 			t.removeTrack(selected.getValue());
 			refreshMainTree();
@@ -119,7 +121,7 @@ public class MainWinController implements Initializable {
 
 	@FXML
 	private void treeVAddItem(ActionEvent e) {
-		TreeItem<Track> selected = mainTree.getSelectionModel().getSelectedItem();
+		TreeItem<MuxingItem> selected = mainTree.getSelectionModel().getSelectedItem();
 		if (selected != null) {
 			File f = CommonGuiHelpers.showSingleFileChooser(getWindow());
 			if (f != null) {
@@ -135,7 +137,7 @@ public class MainWinController implements Initializable {
 
 	@FXML
 	private void propTrackNameChanged(ActionEvent e) {
-		TreeItem<Track> selected = mainTree.getSelectionModel().getSelectedItem();
+		TreeItem<MuxingItem> selected = mainTree.getSelectionModel().getSelectedItem();
 		if (selected != null && selected.getValue().getProperties() != null) {
 			selected.getValue().getProperties().setName(txtTrackName.getText());
 		}
@@ -143,7 +145,7 @@ public class MainWinController implements Initializable {
 
 	@FXML
 	private void propTrackLangChanged(ActionEvent e) {
-		TreeItem<Track> selected = mainTree.getSelectionModel().getSelectedItem();
+		TreeItem<MuxingItem> selected = mainTree.getSelectionModel().getSelectedItem();
 		if (selected != null && selected.getValue().getProperties() != null) {
 			selected.getValue().getProperties().setLanguage(cbTrackLang.getValue());
 		}
@@ -151,7 +153,7 @@ public class MainWinController implements Initializable {
 
 	@FXML
 	private void propTrackDefaultFChanged(ActionEvent e) {
-		TreeItem<Track> selected = mainTree.getSelectionModel().getSelectedItem();
+		TreeItem<MuxingItem> selected = mainTree.getSelectionModel().getSelectedItem();
 		if (selected != null && selected.getValue().getProperties() != null) {
 			selected.getValue().getProperties().setDefaultF(cbTrackDefaultF.getValue());
 		}
@@ -159,7 +161,7 @@ public class MainWinController implements Initializable {
 
 	@FXML
 	private void propTrackForcedFChanged(ActionEvent e) {
-		TreeItem<Track> selected = mainTree.getSelectionModel().getSelectedItem();
+		TreeItem<MuxingItem> selected = mainTree.getSelectionModel().getSelectedItem();
 		if (selected != null && selected.getValue().getProperties() != null) {
 			selected.getValue().getProperties().setForcedF(cbTrackForcedF.getValue());
 		}
@@ -231,11 +233,28 @@ public class MainWinController implements Initializable {
 	}
 
 	private void refreshMainTree() {
-		mainTree.getRoot().getChildren().setAll(t.getTree());
+		List<Container> containers = t.getMuxingData();
+		final List<TreeItem<MuxingItem>> muxingItems = 
+			containers.stream().
+				map(container -> {
+					TreeItem<MuxingItem> mi = new TreeItem<>(container);
+					mi.getChildren().setAll(
+						container.getChildrenStream()
+							.map(track -> new TreeItem<MuxingItem>(track))
+							.peek(t -> t.setGraphic(Icons.getIcon(t.getValue())))
+							.collect(Collectors.toList())
+					);
+
+					mi.setExpanded(true);
+					return mi;
+				})
+				.collect(Collectors.toList());
+
+		mainTree.getRoot().getChildren().setAll(muxingItems);
 	}
 
 	private void refreshProperties() {
-		TreeItem<Track> selected = mainTree.getSelectionModel().getSelectedItem();
+		TreeItem<MuxingItem> selected = mainTree.getSelectionModel().getSelectedItem();
 		if (selected != null && selected != mainTree.getRoot()) {
 			TrackProperties prop = selected.getValue().getProperties();
 			if (prop != null) {
@@ -279,10 +298,10 @@ public class MainWinController implements Initializable {
 
 	@Override
 	public void initialize(URL url, ResourceBundle rb) {
-		TreeItem<Track> root = new TreeItem<>();
+		TreeItem<MuxingItem> root = new TreeItem<>();
 		root.setExpanded(true);
 		mainTree.setRoot(root);
-		mainTree.getSelectionModel().selectedItemProperty().addListener((ObservableValue<? extends TreeItem<Track>> observable, TreeItem<Track> oldValue, TreeItem<Track> newValue) -> {
+		mainTree.getSelectionModel().selectedItemProperty().addListener((ObservableValue<? extends TreeItem<MuxingItem>> observable, TreeItem<MuxingItem> oldValue, TreeItem<MuxingItem> newValue) -> {
 			refreshProperties();
 		});
 

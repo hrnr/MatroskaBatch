@@ -23,11 +23,6 @@
  */
 package cz.hrnr.matroskabatch.mkvmerge;
 
-import cz.hrnr.matroskabatch.track.InputTrack;
-import cz.hrnr.matroskabatch.track.OutputTrack;
-import cz.hrnr.matroskabatch.track.Track;
-import cz.hrnr.matroskabatch.track.TrackProperties;
-import cz.hrnr.matroskabatch.track.TrackType;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -36,6 +31,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import cz.hrnr.matroskabatch.track.Container;
+import cz.hrnr.matroskabatch.track.Track;
+import cz.hrnr.matroskabatch.track.TrackProperties;
+import cz.hrnr.matroskabatch.track.TrackType;
 
 public class MatroskaMerge {
 
@@ -107,7 +107,7 @@ public class MatroskaMerge {
 				.forEach(x -> {
 					// TODO fetch track properties
 					l.add(
-							new InputTrack(
+							new Track(
 									p.toAbsolutePath(),
 									Integer.parseInt(x[2].replace(":", "")),
 									TrackType.valueOf(x[3].toUpperCase()),
@@ -117,15 +117,13 @@ public class MatroskaMerge {
 		return l;
 	}
 
-	public static void muxTracks(OutputTrack out, List<Track> tracks) throws IOException, InterruptedException {
+	public static void muxTracks(Container container) throws IOException, InterruptedException {
 		List<String> cmdline = new ArrayList<>();
+		List<Track> tracks = container.getChildrenAsList();
 		boolean exit_failed;
 
-		cmdline.addAll(out.toCmdLine());
+		cmdline.addAll(container.toCmdLine());
 		tracks.forEach(x -> cmdline.addAll(x.toCmdLine()));
-
-		//		DEBUG
-		List<String> ls = new ArrayList<>();
 
 		exit_failed = MkvMerge(cmdline, null) == 2;
 
