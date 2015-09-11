@@ -23,7 +23,7 @@
  */
 package cz.hrnr.matroskabatch.track;
 
-import java.io.File;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -34,12 +34,32 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.stream.Stream;
 
-import cz.hrnr.matroskabatch.muxing.MuxingHelpers;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlElementWrapper;
+import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlTransient;
 
-public final class Container extends MuxingItem {
+import cz.hrnr.matroskabatch.restapi.RESTPath;
+import cz.hrnr.matroskabath.utils.Utils;
 
-	private final Path originalFileName_;
-	private Set<Track> tracks_;
+@XmlRootElement
+public final class Container implements MuxingItem {
+
+	private Set<Track> tracks;
+	@XmlElement(type=RESTPath.class)
+	private final Path originalFileName;
+	@XmlElement(type=RESTPath.class)
+	private Path fileName;
+	
+	/**
+	 * Constructor for JAXB
+	 */
+	@SuppressWarnings("unused")
+	private Container() {
+		fileName = null;
+		originalFileName = null;
+		tracks = new TreeSet<>();
+	}
 
 	/**
 	 * Creates new OutputTrack
@@ -48,43 +68,78 @@ public final class Container extends MuxingItem {
 	 *
 	 * @param outputDir
 	 * @param inputFile
+	 * @throws IOException 
 	 */
-	public Container(Path outputDir, Path inputFile) {
-		originalFileName_ = new File(inputFile.toUri()).toPath();
-		properties_ = null;
-		type_ = TrackType.CONTAINER;
-		tracks_ = new TreeSet<>();
-		setOutputDir(outputDir);
+	public Container(Path outputDir, Path inputFile, Utils utils) throws IOException {
+		originalFileName = inputFile;
+		tracks = new TreeSet<>();
+		setOutputDir(outputDir, utils);
 	}
 
-	public void setOutputDir(Path outputDir) {
+	@XmlElementWrapper(name = "tracks")
+	@XmlElement(name = "track")
+	public Collection<Track> getChildren() {
+		return tracks;
+	}
+
+	public Path getOriginalFileName_() {
+		return originalFileName;
+	}
+	
+	public void setPath(Path path) {
+		fileName = path;
+	}
+
+	@Override
+	@XmlTransient
+	public Path getPath() {
+		return fileName.toAbsolutePath();
+	}
+
+	@Override
+	public String getFileName() {
+		return fileName.getFileName().toString();
+	}
+
+	@Override
+	public TrackProperties getProperties() {
+		return null;
+	}
+
+	@Override
+	public TrackType getType() {
+		return TrackType.CONTAINER;
+	}
+
+	public void setOutputDir(Path outputDir, Utils utils) throws IOException {
 		assert Files.isDirectory(outputDir);
 
-		f_ = MuxingHelpers.getDefaultOutput(outputDir, originalFileName_);
+		fileName = utils.getDefaultOutput(outputDir, originalFileName);
+	}
+
+	@Override
+	public String toString() {
+		return getFileName() + " | " + getPath().toUri().getPath();
 	}
 
 	@Override
 	public List<String> toCmdLine() {
-		return Arrays.asList("-o", f_.toAbsolutePath().toString());
+		return Arrays.asList("-o", fileName.toAbsolutePath().toString());
 	}
 
 	public void addChildren(Track t) {
-		tracks_.add(t);
+		tracks.add(t);
 	}
 
 	public void removeChildren(Track t) {
-		tracks_.remove(t);
-	}
-
-	public Collection<Track> getChildren() {
-		return tracks_;
+		tracks.remove(t);
 	}
 
 	public List<Track> getChildrenAsList() {
-		return new ArrayList<>(tracks_);
+		return new ArrayList<>(tracks);
 	}
 
 	public Stream<Track> getChildrenStream() {
-		return tracks_.stream();
+		return tracks.stream();
 	}
 }

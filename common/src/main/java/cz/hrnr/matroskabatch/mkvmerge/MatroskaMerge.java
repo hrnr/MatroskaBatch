@@ -32,12 +32,16 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import cz.hrnr.matroskabatch.track.Container;
 import cz.hrnr.matroskabatch.track.Track;
 import cz.hrnr.matroskabatch.track.TrackProperties;
 import cz.hrnr.matroskabatch.track.TrackType;
 
 public class MatroskaMerge {
+	private static final Log logger = LogFactory.getLog(MatroskaMerge.class); 
 
 	/**
 	 * Runs mkvmerge with args
@@ -55,8 +59,12 @@ public class MatroskaMerge {
 		int exit_code;
 
 		ProcessBuilder pb = new ProcessBuilder(cmdline);
+		if(logger.isDebugEnabled()) {
+			pb.redirectErrorStream(true);
+			logger.debug("executing mkvmerge: " + cmdline);
+		}
 		Process process = pb.start();
-		exit_code = process.waitFor();
+		exit_code = process.waitFor();		
 
 		if (output != null) {
 			try (BufferedReader b = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
@@ -118,6 +126,9 @@ public class MatroskaMerge {
 	}
 
 	public static void muxTracks(Container container) throws IOException, InterruptedException {
+		List<String> output = null;
+		if(logger.isDebugEnabled())
+			output = new ArrayList<>();
 		List<String> cmdline = new ArrayList<>();
 		List<Track> tracks = container.getChildrenAsList();
 		boolean exit_failed;
@@ -128,7 +139,7 @@ public class MatroskaMerge {
 		exit_failed = MkvMerge(cmdline, null) == 2;
 
 		if (exit_failed) {
-			throw new IOException("mkvmerge execution failed");
+			throw new IOException("mkvmerge execution failed: " + output);
 		}
 	}
 }

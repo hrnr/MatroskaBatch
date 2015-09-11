@@ -26,37 +26,15 @@ package cz.hrnr.matroskabatch.track;
 import java.nio.file.Path;
 import java.util.List;
 
-public abstract class MuxingItem implements Comparable<MuxingItem> {
-
-	protected Path f_;
-	protected TrackProperties properties_;
-	protected TrackType type_;
-
-	public String getFullPath() {
-		return f_.toAbsolutePath().toString();
-	}
-
-	public String getFileName() {
-		return f_.getFileName().toString();
-	}
-
-	public TrackProperties getProperties() {
-		return properties_;
-	}
-
-	public TrackType getType() {
-		return type_;
-	}
+public interface MuxingItem extends Comparable<MuxingItem> {
+	public Path getPath();
+	public String getFileName();
+	public TrackProperties getProperties();
+	public TrackType getType();
+	public List<String> toCmdLine();
 
 	@Override
-	public int compareTo(MuxingItem o) {
-		return type_.getNumVal() - o.type_.getNumVal();
+	default public int compareTo(MuxingItem o) {
+		return getType().getNumVal() - o.getType().getNumVal();
 	}
-
-	@Override
-	public String toString() {
-		return (type_ != TrackType.CONTAINER ? type_ + ": " : "") + getFileName() + " | " + getFullPath();
-	}
-
-	public abstract List<String> toCmdLine();
 }

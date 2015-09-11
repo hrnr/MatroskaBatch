@@ -23,24 +23,88 @@
  */
 package cz.hrnr.matroskabatch.track;
 
-import java.io.File;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
-public final class Track extends MuxingItem {
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlTransient;
 
-	int trackID_ = 0;
+import cz.hrnr.matroskabatch.restapi.RESTPath;
 
-	public Track(Path path, int trackID, TrackType type, TrackProperties properties) {
-		f_ = path;
-		properties_ = properties;
-		type_ = type;
-		trackID_ = trackID;
+@XmlRootElement
+public final class Track implements MuxingItem {
+
+	@XmlElement(type=RESTPath.class)
+	private Path path;
+	private TrackProperties properties;
+	private TrackType type;
+	private int trackID;
+
+	/**
+	 * Constructor for JAXB
+	 */
+	@SuppressWarnings("unused")
+	private Track() {
+		path = null;
+		properties = null;
+		type = null;
+		trackID = 0;
 	}
 
-	public void setPath(String path) {
-		f_ = new File(path).toPath();
+	
+	public Track(Path path, int trackID, TrackType type, TrackProperties properties) {
+		this.path = path;
+		this.properties = properties;
+		this.type = type;
+		this.trackID = trackID;
+	}
+
+	@Override
+	@XmlTransient
+	public Path getPath() {
+		return path;
+	}
+	
+	public void setPath(Path path) {
+		this.path = path;
+	}
+
+	public int getTrackID() {
+		return trackID;
+	}
+
+	public void setTrackID(int trackID) {
+		this.trackID = trackID;
+	}
+
+	@Override
+	public String getFileName() {
+		return path.getFileName().toString();
+	}
+	
+	public void setProperties(TrackProperties properties) {
+		this.properties = properties;
+	}
+
+	@Override
+	public TrackProperties getProperties() {
+		return properties;
+	}
+	
+	public void setType(TrackType trackType) {
+		type = trackType;
+	}
+
+	@Override
+	public TrackType getType() {
+		return type;
+	}
+
+	@Override
+	public String toString() {
+		return type + ": " + getFileName() + " | " + getPath();
 	}
 
 	@Override
@@ -48,13 +112,13 @@ public final class Track extends MuxingItem {
 		List<String> cmdline = new ArrayList<>();
 
 		// header: track definition
-		cmdline.addAll(type_.toCmdLine(trackID_));
+		cmdline.addAll(type.toCmdLine(trackID));
 
 		// properties
-		cmdline.addAll(properties_.toCmdLine(trackID_));
+		cmdline.addAll(properties.toCmdLine(trackID));
 
 		// source file
-		cmdline.add(f_.toAbsolutePath().toString());
+		cmdline.add(path.toAbsolutePath().toString());
 
 		return cmdline;
 	}

@@ -24,44 +24,27 @@
 package cz.hrnr.matroskabatch.muxing;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import javax.inject.Singleton;
+
 import cz.hrnr.matroskabatch.mkvmerge.MatroskaMerge;
 import cz.hrnr.matroskabatch.track.Container;
-import javafx.beans.property.DoubleProperty;
-import javafx.beans.property.SimpleDoubleProperty;
-import javafx.beans.value.ObservableDoubleValue;
 
-public class MuxingService {
+@Singleton
+public class MuxingService extends AbstractMuxingService {
 
 	private final ExecutorService service = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
-	private int totalTasks_ = 0;
-	private int completedTasks_ = 0;
-	private final DoubleProperty progress = new SimpleDoubleProperty(0);
-
-	public double getProgress() {
-		return progress.get();
-	}
-
-	/**
-	 * Property indicating completed tasks of this service
-	 *
-	 * This is value in [0, 1] indication number of completed tasks in percent
-	 *
-	 * @return
-	 */
-	public ObservableDoubleValue progressProperty() {
-		return progress;
-	}
-
 	/**
 	 * Add whole tree to muxing queue
 	 *
 	 * @param tree
 	 */
-	public void addTree(MuxingTree tree) {
-		for (Container container : tree.getMuxingData()) {
+	@Override
+	synchronized public void addMuxingData(List<Container> data) {
+		for (Container container : data) {
 			++totalTasks_;
 			service.execute(
 				// Runnable instance here
@@ -70,6 +53,7 @@ public class MuxingService {
 						MatroskaMerge.muxTracks(container);
 					} catch (IOException | InterruptedException ex) {
 						System.err.println("Exception occured during muxing");
+						ex.printStackTrace();
 					}
 					taskCompleted();
 				});
@@ -81,6 +65,7 @@ public class MuxingService {
 		progress.set((double) completedTasks_ / totalTasks_);
 	}
 
+	@Override
 	synchronized public void shutdown() {
 		service.shutdownNow();
 	}

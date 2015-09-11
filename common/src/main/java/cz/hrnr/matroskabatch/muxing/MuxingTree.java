@@ -24,7 +24,6 @@
 package cz.hrnr.matroskabatch.muxing;
 
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -34,14 +33,15 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
 
-import cz.hrnr.matroskabatch.mkvmerge.MatroskaMerge;
 import cz.hrnr.matroskabatch.track.Container;
 import cz.hrnr.matroskabatch.track.MuxingItem;
 import cz.hrnr.matroskabatch.track.Track;
+import cz.hrnr.matroskabath.utils.LocalUtils;
+import cz.hrnr.matroskabath.utils.RemoteUtils;
+import cz.hrnr.matroskabath.utils.Utils;
 
 public final class MuxingTree {
 
@@ -49,17 +49,31 @@ public final class MuxingTree {
 	private final Set<Container> containers_ = new HashSet<>();
 	// maps subTrack -> masterTrack
 	private final Map<MuxingItem, Container> subtracks_mapping_ = new HashMap<>();
-
 	private Path outputDir_;
+	private Utils utils;
+	
+	public MuxingTree() {
+		utils = new LocalUtils();
+	}
+	
+	public MuxingTree(RemoteUtils remoteUtils) {
+		utils = remoteUtils;
+	}
+
+	public void setUtils(Utils utils) {
+		this.utils = utils;
+	}
 
 	public Path getOutputDir() {
 		return outputDir_;
 	}
 
-	public void setOutputDir(Path outputDir) {
+	public void setOutputDir(Path outputDir) throws IOException {
 		outputDir_ = outputDir;
 		// set output for all masterTracks
-		containers_.forEach(x -> x.setOutputDir(outputDir));
+		for(Container container : containers_) {
+			container.setOutputDir(outputDir, utils);
+		}
 	}
 
 	/**
@@ -72,11 +86,11 @@ public final class MuxingTree {
 		try {
 			for (Path file : files) {
 				// add masterTrack for each video file
-				if (MuxingHelpers.isVideo(file))
-					addMasterTrack(new Container(outputDir_, file));
+				if (utils.isVideo(file))
+					addMasterTrack(new Container(outputDir_, file, utils));
 
 				// add subtracks
-				addAllSubTracks(MatroskaMerge.getTracks(file));
+				addAllSubTracks(utils.getTracks(file));
 			}
 		} catch (InterruptedException e) {
 			throw new IOException(e);
@@ -91,12 +105,11 @@ public final class MuxingTree {
 	 * @throws IOException
 	 */
 	public boolean addDirectory(Path dir) throws IOException {
-		if (!Files.isDirectory(dir)) {
+		if (!utils.isDirectory(dir)) {
 			return false;
 		}
 
-		List<Path> dirList = Files.list(dir)
-				.collect(Collectors.toList());
+		List<Path> dirList = utils.listFiles(dir);
 
 		addFiles(dirList);
 		return true;

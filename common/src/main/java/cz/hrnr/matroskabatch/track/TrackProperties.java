@@ -29,7 +29,15 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import javax.xml.bind.annotation.XmlRootElement;
+
+@XmlRootElement
 public class TrackProperties {
+	
+	protected String name;
+	protected LangProperty language;
+	protected BoolProperty defaultF;
+	protected BoolProperty forcedF;
 
 	/**
 	 * Initialize Track properties to default values
@@ -47,11 +55,6 @@ public class TrackProperties {
 		this.defaultF = defaultF;
 		this.forcedF = forcedF;
 	}
-
-	protected String name;
-	protected LangProperty language;
-	protected BoolProperty defaultF;
-	protected BoolProperty forcedF;
 
 	/**
 	 * @return the name
