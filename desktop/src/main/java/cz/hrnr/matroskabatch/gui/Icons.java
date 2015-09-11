@@ -23,21 +23,36 @@
  */
 package cz.hrnr.matroskabatch.gui;
 
+import cz.hrnr.matroskabatch.restapi.RESTPath;
 import cz.hrnr.matroskabatch.track.MuxingItem;
+import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 
 public class Icons {
+	private static Image videoIcon = new Image("/icons/video.png");
+	private static Image audioIcon = new Image("/icons/audio.png");
+	private static Image subtitlesIcon = new Image("/icons/subtitles.png");
+	private static Image directoryIcon = new Image("/icons/folder.png");
+	private static Image fileIcon = new Image("/icons/text-x-generic.png");
 
 	public static ImageView getVideoIcon() {
-		return new ImageView("/icons/video.png");
+		return new ImageView(videoIcon);
 	}
 
 	public static ImageView getAudioIcon() {
-		return new ImageView("/icons/audio.png");
+		return new ImageView(audioIcon);
 	}
 
 	public static ImageView getSubtitlesIcon() {
-		return new ImageView("/icons/subtitles.png");
+		return new ImageView(subtitlesIcon);
+	}
+	
+	public static ImageView getDirectoryIcon() {
+		return new ImageView(directoryIcon);
+	}
+	
+	public static ImageView getFileIcon() {
+		return new ImageView(fileIcon);
 	}
 	
 	/**
@@ -55,6 +70,14 @@ public class Icons {
 				return Icons.getSubtitlesIcon();
 			default:
 				return null;
+		}
+	}
+	
+	public static ImageView getIcon(RESTPath path) {
+		if(path.isDirectory()) {
+			return Icons.getDirectoryIcon();
+		} else {
+			return Icons.getFileIcon();
 		}
 	}
 }

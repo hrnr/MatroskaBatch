@@ -23,21 +23,31 @@
  */
 package cz.hrnr.matroskabatch.gui;
 
-import java.io.File;
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.ResourceBundle;
 import java.util.stream.Collectors;
 
+import cz.hrnr.matroskabatch.gui.filechooser.FileChoosers;
+import cz.hrnr.matroskabatch.gui.filechooser.LocalFileChoosers;
+import cz.hrnr.matroskabatch.gui.filechooser.RemoteFileChoosers;
 import cz.hrnr.matroskabatch.mkvmerge.MatroskaMerge;
+import cz.hrnr.matroskabatch.muxing.AbstractMuxingService;
 import cz.hrnr.matroskabatch.muxing.MuxingService;
 import cz.hrnr.matroskabatch.muxing.MuxingTree;
+import cz.hrnr.matroskabatch.muxing.RemoteMuxingService;
 import cz.hrnr.matroskabatch.track.Container;
 import cz.hrnr.matroskabatch.track.MuxingItem;
 import cz.hrnr.matroskabatch.track.TrackProperties;
 import cz.hrnr.matroskabatch.track.properties.BoolProperty;
 import cz.hrnr.matroskabatch.track.properties.LangProperty;
+import cz.hrnr.matroskabath.utils.LocalUtils;
+import cz.hrnr.matroskabath.utils.RemoteUtils;
+import cz.hrnr.matroskabath.utils.Utils;
 import javafx.application.Platform;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
@@ -55,41 +65,41 @@ import javafx.stage.Window;
 public class MainWinController implements Initializable {
 
 	// tree managing muxing order
-	private final MuxingTree t = new MuxingTree();
-	private MuxingService ms = new MuxingService();
+	private MuxingTree t = new MuxingTree();
+	private AbstractMuxingService muxingService = new MuxingService();
+	private FileChoosers fileChoosers = new LocalFileChoosers();
+	private DialogHelpers dialogHelpers = new DialogHelpers();
+	private Utils utils = new LocalUtils();
 
 	@FXML
 	private TreeView<MuxingItem> mainTree;
-
 	@FXML
 	private TextField txtTrackName;
-
 	@FXML
 	private ComboBox<LangProperty> cbTrackLang;
-
 	@FXML
 	private ComboBox<BoolProperty> cbTrackDefaultF;
-
 	@FXML
 	private ComboBox<BoolProperty> cbTrackForcedF;
-
 	@FXML
 	private ProgressBar pgbBottom;
-
 	@FXML
 	private MenuItem mnbStartMux;
-
 	@FXML
 	private MenuItem mnbStopMux;
+	@FXML
+	private MenuItem mnbConnect;
+	@FXML
+	private MenuItem mnbDisconnect;
 
 	@FXML
 	private void addDirectory(ActionEvent e) {
-		File f = CommonGuiHelpers.showDirectoryChooser(getWindow());
+		Path f = fileChoosers.showDirectoryChooser(getWindow());
 		if (f != null) {
 			try {
-				t.addDirectory(f.toPath());
+				t.addDirectory(f);
 			} catch (IOException ex) {
-				CommonGuiHelpers.showErrorDialog("Can't add directory", "Sorry. Couldn't read required files.");
+				dialogHelpers.showErrorDialog("Can't add directory", "Sorry. Couldn't read required files.");
 			}
 		}
 		refreshMainTree();
@@ -97,14 +107,12 @@ public class MainWinController implements Initializable {
 
 	@FXML
 	private void addFiles(ActionEvent e) {
-		List<File> f = CommonGuiHelpers.showMultipleFileChooser(getWindow());
+		List<Path> f = fileChoosers.showMultipleFileChooser(getWindow());
 		if (f != null) {
 			try {
-				t.addFiles(f.stream()
-						.map(x -> x.toPath())
-						.collect(Collectors.toList()));
+				t.addFiles(f);
 			} catch (IOException ex) {
-				CommonGuiHelpers.showErrorDialog("Can't add files", "Sorry. Couldn't read required files.");
+				dialogHelpers.showErrorDialog("Can't add files", "Sorry. Couldn't read required files.");
 			}
 		}
 		refreshMainTree();
@@ -123,13 +131,13 @@ public class MainWinController implements Initializable {
 	private void treeVAddItem(ActionEvent e) {
 		TreeItem<MuxingItem> selected = mainTree.getSelectionModel().getSelectedItem();
 		if (selected != null) {
-			File f = CommonGuiHelpers.showSingleFileChooser(getWindow());
+			Path f = fileChoosers.showSingleFileChooser(getWindow());
 			if (f != null) {
 				try {
-					t.addAllSubTracks(selected.getValue(), MatroskaMerge.getTracks(f.toPath()));
+					t.addAllSubTracks(selected.getValue(), utils.getTracks(f));
 					refreshMainTree();
 				} catch (IOException | InterruptedException ex) {
-					CommonGuiHelpers.showErrorDialog("Can't add file", "Sorry. Couldn't read required files.");
+					dialogHelpers.showErrorDialog("Can't add file", "Sorry. Couldn't read required files.");
 				}
 			}
 		}
@@ -175,22 +183,24 @@ public class MainWinController implements Initializable {
 
 	@FXML
 	private void setOutputDir(ActionEvent e) {
-		File f = CommonGuiHelpers.showDirectoryChooser(getWindow());
+		Path f = fileChoosers.showDirectoryChooser(getWindow());
 		if (f != null) {
-			t.setOutputDir(f.toPath());
+			try {
+				t.setOutputDir(f);
+			} catch (IOException e1) {
+				dialogHelpers.showErrorDialog("couldn't set output directory", "couldn't retrive necessary info");
+			}
 		}
 		refreshMainTree();
 	}
 
 	@FXML
 	private void startMuxing(ActionEvent e) {
-		ms = new MuxingService();
 		pgbBottom.setProgress(0);
 		mnbStopMux.setDisable(false);
 		mnbStartMux.setDisable(true);
 
-		ms.addTree(t);
-		ms.progressProperty().addListener(
+		muxingService.progressProperty().addListener(
 				(ObservableValue<? extends Number> observable, Number oldValue, Number newValue)
 				-> Platform.runLater(() -> {
 					pgbBottom.setProgress(newValue.doubleValue());
@@ -199,6 +209,7 @@ public class MainWinController implements Initializable {
 					}
 				})
 		);
+		muxingService.addTree(t);
 	}
 
 	@FXML
@@ -206,7 +217,7 @@ public class MainWinController implements Initializable {
 		mnbStopMux.setDisable(true);
 		mnbStartMux.setDisable(false);
 
-		ms.shutdown();
+		muxingService.shutdown();
 	}
 
 	@FXML
@@ -214,18 +225,43 @@ public class MainWinController implements Initializable {
 		stopMuxing(e);
 		Platform.exit();
 	}
+	
+	@FXML
+	private void remoteConnect(ActionEvent e) {
+		String rawUri = dialogHelpers.showTextInput("Connect to remote MatroskaBatch server", 
+				"URI:");
+		if (rawUri == null)
+			return;
+		
+		URI uri;
+		try {
+			uri = new URI(rawUri);
+		} catch (URISyntaxException e1) {
+			dialogHelpers.showErrorDialog("Invalid URI", "Sorry. Couldn't read provided uri.");
+			return;
+		}
+
+		injectRemoteUtils(uri);
+		setDisableConnect(true);
+	}
+	
+	@FXML
+	private void remoteDisconnect(ActionEvent e) {
+		injectLocalUtils();
+		setDisableConnect(false);
+	}
 
 	@FXML
 	private void showAbout(ActionEvent e) {
-		CommonGuiHelpers.showInfoDialog("Matroska Batch Merge", "version 1.0 (\"Flying Circus\")\n© 2015 Jiri Horner\nThis is free software licensed under MIT License");
+		dialogHelpers.showInfoDialog("Matroska Batch Merge", "version 1.0 (\"Flying Circus\")\n© 2015 Jiri Horner\nThis is free software licensed under MIT License");
 	}
 
 	private void completedMuxing() {
 		mnbStopMux.setDisable(true);
 		mnbStartMux.setDisable(false);
 
-		CommonGuiHelpers.showInfoDialog("Muxing completed", "All files has been succesfully muxed. Output was written to chosen directory.");
-		ms.shutdown();
+		dialogHelpers.showInfoDialog("Muxing completed", "All files has been succesfully proceeded. Output was written to chosen directory.");
+		muxingService.resetProgress();
 	}
 
 	private Window getWindow() {
@@ -284,6 +320,11 @@ public class MainWinController implements Initializable {
 			cbTrackForcedF.setValue(null);
 		}
 	}
+	
+	private void setDisableConnect(boolean status) {
+		mnbConnect.setDisable(status);
+		mnbDisconnect.setDisable(!status);
+	}
 
 	private void checkMkvMerge() {
 		try {
@@ -291,9 +332,31 @@ public class MainWinController implements Initializable {
 				throw new ReflectiveOperationException();
 			}
 		} catch (IOException | InterruptedException | ReflectiveOperationException ex) {
-			CommonGuiHelpers.showErrorDialog("mkvmerge not found", "mkvmerge must be installed in PATH \nmkvmerge wasn't installed properly, check README");
-			Platform.exit();
+			dialogHelpers.showErrorDialog("mkvmerge not found", "mkvmerge must be installed in PATH\nlocal muxing will not work, check README");
+//			Platform.exit();
 		}
+	}
+	
+	private void injectRemoteUtils(URI uri) {
+		RemoteUtils remoteUtils = new RemoteUtils(uri);
+		
+		utils = remoteUtils;
+		t = new MuxingTree(remoteUtils);
+		fileChoosers = new RemoteFileChoosers(remoteUtils);
+		muxingService = new RemoteMuxingService(uri);
+		
+		refreshMainTree();
+	}
+	
+	private void injectLocalUtils() {
+		LocalUtils localUtils = new LocalUtils();
+		
+		utils = localUtils;
+		t = new MuxingTree();
+		fileChoosers = new LocalFileChoosers();
+		muxingService = new MuxingService();
+		
+		refreshMainTree();
 	}
 
 	@Override
@@ -310,9 +373,10 @@ public class MainWinController implements Initializable {
 		});
 
 		cbTrackLang.setItems(FXCollections.observableArrayList(LangProperty.values()));
+		cbTrackDefaultF.setItems(FXCollections.observableArrayList(BoolProperty.values()));
+		cbTrackForcedF.setItems(FXCollections.observableArrayList(new BoolProperty[] {BoolProperty.NO, BoolProperty.YES}));
 
 		setDisableProperties(true);
-		CommonGuiHelpers.initialize();
 
 		checkMkvMerge();
 	}

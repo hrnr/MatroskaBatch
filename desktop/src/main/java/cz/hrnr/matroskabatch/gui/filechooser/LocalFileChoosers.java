@@ -21,25 +21,34 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package cz.hrnr.matroskabatch.gui;
+package cz.hrnr.matroskabatch.gui.filechooser;
 
 import java.io.File;
+import java.nio.file.Path;
 import java.util.List;
-import javafx.scene.control.Alert;
+import java.util.stream.Collectors;
+
 import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
 import javafx.stage.Window;
 
-public class CommonGuiHelpers {
-
-	private CommonGuiHelpers() {
+public class LocalFileChoosers implements FileChoosers {
+	public LocalFileChoosers() {
+		dc = new DirectoryChooser();
+		dc.setTitle("Select directory");
+		
+		fc = new FileChooser();
 	}
 
-	private static DirectoryChooser dc;
-	private static File lastDir;
-	private static FileChooser fc;
+	private DirectoryChooser dc;
+	private File lastDir;
+	private FileChooser fc;
 
-	public static File showDirectoryChooser(Window w) {
+	/* (non-Javadoc)
+	 * @see cz.hrnr.matroskabatch.gui.FileChoosers#showDirectoryChooser(javafx.stage.Window)
+	 */
+	@Override
+	public Path showDirectoryChooser(Window w) {
 		File f;
 		dc.setInitialDirectory(lastDir);
 		f = dc.showDialog(w);
@@ -47,10 +56,14 @@ public class CommonGuiHelpers {
 			lastDir = f;
 		}
 
-		return f;
+		return f.toPath();
 	}
 
-	public static File showSingleFileChooser(Window w) {
+	/* (non-Javadoc)
+	 * @see cz.hrnr.matroskabatch.gui.FileChoosers#showSingleFileChooser(javafx.stage.Window)
+	 */
+	@Override
+	public Path showSingleFileChooser(Window w) {
 		File f;
 		fc.setInitialDirectory(lastDir);
 		fc.setTitle("Select file");
@@ -59,10 +72,14 @@ public class CommonGuiHelpers {
 			lastDir = f.getParentFile();
 		}
 
-		return f;
+		return f.toPath();
 	}
 
-	public static List<File> showMultipleFileChooser(Window w) {
+	/* (non-Javadoc)
+	 * @see cz.hrnr.matroskabatch.gui.FileChoosers#showMultipleFileChooser(javafx.stage.Window)
+	 */
+	@Override
+	public List<Path> showMultipleFileChooser(Window w) {
 		List<File> f;
 		fc.setInitialDirectory(lastDir);
 		fc.setTitle("Select file");
@@ -70,28 +87,13 @@ public class CommonGuiHelpers {
 		if (f != null && !f.isEmpty()) {
 			lastDir = f.get(0).getParentFile();
 		}
+		
+		
+		List<Path> paths = null;
+		if(f!=null) {
+			paths = f.stream().map(x -> x.toPath()).collect(Collectors.toList());
+		}
 
-		return f;
-	}
-
-	public static void showErrorDialog(String header, String text) {
-		Alert alert = new Alert(Alert.AlertType.ERROR);
-		alert.setHeaderText(header);
-		alert.setContentText(text);
-		alert.showAndWait();
-	}
-
-	public static void showInfoDialog(String header, String text) {
-		Alert alert = new Alert(Alert.AlertType.INFORMATION);
-		alert.setHeaderText(header);
-		alert.setContentText(text);
-		alert.showAndWait();
-	}
-
-	public static void initialize() {
-		dc = new DirectoryChooser();
-		dc.setTitle("Select directory");
-
-		fc = new FileChooser();
+		return paths;
 	}
 }

@@ -97,13 +97,6 @@ THE SOFTWARE.
 									<HBox.margin>
 										<Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
 									</HBox.margin>
-									<items>
-										<FXCollections fx:factory="observableArrayList">
-											<BoolProperty fx:constant="DEFAULT" />
-											<BoolProperty fx:constant="YES" />
-											<BoolProperty fx:constant="NO" />
-										</FXCollections>
-									</items>
 								</ComboBox>
 							</children>
 						</HBox>
@@ -118,12 +111,6 @@ THE SOFTWARE.
 									<HBox.margin>
 										<Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
 									</HBox.margin>
-									<items>
-										<FXCollections fx:factory="observableArrayList">
-											<BoolProperty fx:constant="NO" />
-											<BoolProperty fx:constant="YES" />
-										</FXCollections>
-									</items>
 								</ComboBox>
 							</children>
 						</HBox>
@@ -159,6 +146,12 @@ THE SOFTWARE.
 						<MenuItem fx:id="mnbStopMux" disable="true" mnemonicParsing="false" onAction="#stopMuxing" text="Abort muxing" />
 					</items>
 				</Menu>
+            <Menu mnemonicParsing="false" text="Remote">
+              <items>
+                <MenuItem fx:id="mnbConnect" mnemonicParsing="false" onAction="#remoteConnect" text="Connect" />
+                  <MenuItem fx:id="mnbDisconnect" disable="true" mnemonicParsing="false" onAction="#remoteDisconnect" text="Disconnect" />
+              </items>
+            </Menu>
 				<Menu mnemonicParsing="false" text="Help">
 					<items>
 						<MenuItem mnemonicParsing="false" onAction="#showAbout" text="About" />
