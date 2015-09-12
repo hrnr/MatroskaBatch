@@ -42,7 +42,6 @@ public class FileSystem {
 	 * 
 	 * @param path URI identifying RESTPath as retrieved from this API
 	 * @return true if given path represents a directory, false otherwise
-	 * @see Files#isDirectory(java.nio.file.Path, java.nio.file.LinkOption...)
 	 */
 	@GET
 	@Path("is-directory")
@@ -57,7 +56,6 @@ public class FileSystem {
 	 * @param directory URI identifying RESTPath as retrieved from this API, should be directory
 	 * @return entries in directory
 	 * @throws WebApplicationException if given path is not directory or IO error occured on the server
-	 * @see Files#list(java.nio.file.Path)
 	 */
 	@GET
 	@Path("list")
@@ -108,7 +106,6 @@ public class FileSystem {
 	 * @param path URI identifying RESTPath to resolve against as retrieved from this API
 	 * @param segment String to convert to path and resolve against path
 	 * @return resolved path
-	 * @see java.nio.file.Path#resolve(String)
 	 */
 	@GET
 	@Path("resolve")
