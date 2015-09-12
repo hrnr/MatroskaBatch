@@ -17,24 +17,12 @@ multiple non-Matroska files together (i.e. video, audio and subtitle track) as
 long as they have similar names. Manual file-by-file mode is also available
 for fine tuning.
 
-
-Building
---------
-
-This project uses [maven](http://maven.apache.org/) for building, but one of
-it's dependencies is not present in maven repository. You have to add it to
-your local repo manually. See [java-string-
-similarity](https://github.com/rrice/java-string-similarity) or just go with:
-
-	git clone https://github.com/rrice/java-string-similarity.git
-	cd java-string-similarity
-	mvn install
-
-Now you can build MatroskaBatch as usual.
+MatroskaBatch Server provides API for remote muxing. It provides easy way of
+muxing large media files on media servers etc.
 
 
-Installation
-------------
+Running desktop app
+-------------------
 
 MatroskaBatch is Java program. You need Java 8 (Oracle Java or OpenJDK) and
 Java FX to run MatroskaBatch. On debian-based systems run
@@ -54,6 +42,63 @@ Now you are ready to run MatroskaBatch
 
 	java -jar MatroskaBatch.jar
 
+
+Building
+--------
+
+This project uses [gradle](http://gradle.org/) for building. Gradle wrapper is
+not included, gradle needs to be installed on your machine.
+
+There are 3 projects `desktop`, `server`, `common`.
+
+To build & run desktop application use
+
+	gradle run
+
+To build server war archive use
+
+	gradle war
+
+
+Remote muxing
+-------------
+
+MatroskaBatch can work in remote mode. For remote muxing, you don't need
+`mkvmerge` installed on client (only on server).
+
+### Server
+
+MatroskaBatch Server is servlet-based application providing REST
+API. You need to use container server such as Tomcat or complete Java EE
+platform such as Glassfish to run server part of MatroskaBatch.
+
+`gradle war` will create a war archive with all dependencies. Install it
+according to your platform documentation (e. g. copy to monitored folder).
+
+Server can be configured through 2 context parameters. Default configuration:
+
+	<context-param>
+		<param-name>mediaRoot</param-name>
+		<param-value>/</param-value>
+	</context-param>
+	<context-param>
+		<param-name>rootURI</param-name>
+		<param-value>matroskabatch</param-value>
+	</context-param>
+
+`mediaRoot` is folder that all paths will be resolved against (all URIs
+representing files will be relative to this folder). `rootURI` will be used as
+hostname in such file URIs.
+
+Rest API will be available under /rest webapp path. Final URL then may look as
+`http://localhost:8080/MatroskaBatchServer-1.0/rest` or similar
+according your server config.
+
+### Client
+
+MatroskaBatch Java FX application can be used for remote muxing. Connect to
+server in remote menu and start working remotely. All functionality is
+available in remote mode.
 
 Copyright
 ---------
