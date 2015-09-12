@@ -30,14 +30,16 @@ import javafx.scene.Scene;
 import javafx.stage.Stage;
 
 public class MatroskaBatch extends Application {
+	private MainWinController controller;
 
 	@Override
 	public void start(Stage stage) throws Exception {
-		Parent root = FXMLLoader.load(getClass().getResource("/fxml/MainWin.fxml"));
+		FXMLLoader loader = new FXMLLoader();
+		loader.setLocation(getClass().getResource("/fxml/MainWin.fxml"));
+		Parent root = loader.load();
+		controller = loader.getController();
 
 		Scene scene = new Scene(root);
-//        scene.getStylesheets().add("/styles/Styles.css");
-
 		stage.setTitle("Matroska Batch");
 		stage.setScene(scene);
 		stage.show();
@@ -54,5 +56,12 @@ public class MatroskaBatch extends Application {
 	public static void main(String[] args) {
 		launch(args);
 	}
-
+	
+	@Override
+	public void stop() throws Exception {
+		if(controller != null) {
+			controller.stop();
+		}
+		controller = null;
+	}
 }

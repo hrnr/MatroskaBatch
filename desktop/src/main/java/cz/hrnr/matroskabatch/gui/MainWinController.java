@@ -262,6 +262,7 @@ public class MainWinController implements Initializable {
 
 		dialogHelpers.showInfoDialog("Muxing completed", "All files has been succesfully proceeded. Output was written to chosen directory.");
 		muxingService.resetProgress();
+		muxingService.shutdown();
 	}
 
 	private Window getWindow() {
@@ -343,6 +344,7 @@ public class MainWinController implements Initializable {
 		utils = remoteUtils;
 		t = new MuxingTree(remoteUtils);
 		fileChoosers = new RemoteFileChoosers(remoteUtils);
+		muxingService.shutdown();
 		muxingService = new RemoteMuxingService(uri);
 		
 		refreshMainTree();
@@ -354,6 +356,7 @@ public class MainWinController implements Initializable {
 		utils = localUtils;
 		t = new MuxingTree();
 		fileChoosers = new LocalFileChoosers();
+		muxingService.shutdown();
 		muxingService = new MuxingService();
 		
 		refreshMainTree();
@@ -377,8 +380,11 @@ public class MainWinController implements Initializable {
 		cbTrackForcedF.setItems(FXCollections.observableArrayList(new BoolProperty[] {BoolProperty.NO, BoolProperty.YES}));
 
 		setDisableProperties(true);
-
+		
 		checkMkvMerge();
 	}
-
+	
+	public void stop() {
+		muxingService.shutdown();
+	}
 }

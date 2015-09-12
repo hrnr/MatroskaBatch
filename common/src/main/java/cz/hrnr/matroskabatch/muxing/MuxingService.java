@@ -30,13 +30,21 @@ import java.util.concurrent.Executors;
 
 import javax.inject.Singleton;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import cz.hrnr.matroskabatch.mkvmerge.MatroskaMerge;
 import cz.hrnr.matroskabatch.track.Container;
 
 @Singleton
 public class MuxingService extends AbstractMuxingService {
-
-	private final ExecutorService service = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
+	private static final Log logger = LogFactory.getLog(MuxingService.class);
+	private ExecutorService service;
+	
+	public MuxingService() {
+		initService();
+	}
+	
 	/**
 	 * Add whole tree to muxing queue
 	 *
@@ -44,6 +52,9 @@ public class MuxingService extends AbstractMuxingService {
 	 */
 	@Override
 	synchronized public void addMuxingData(List<Container> data) {
+		if(service.isShutdown())
+			initService();
+		
 		for (Container container : data) {
 			++totalTasks_;
 			service.execute(
@@ -51,9 +62,8 @@ public class MuxingService extends AbstractMuxingService {
 				() -> {
 					try {
 						MatroskaMerge.muxTracks(container);
-					} catch (IOException | InterruptedException ex) {
-						System.err.println("Exception occured during muxing");
-						ex.printStackTrace();
+					} catch (IOException | InterruptedException e) {
+						logger.error("Exception occured during muxing", e);
 					}
 					taskCompleted();
 				});
@@ -68,5 +78,9 @@ public class MuxingService extends AbstractMuxingService {
 	@Override
 	synchronized public void shutdown() {
 		service.shutdownNow();
+	}
+	
+	synchronized private void initService() {
+		service = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
 	}
 }
