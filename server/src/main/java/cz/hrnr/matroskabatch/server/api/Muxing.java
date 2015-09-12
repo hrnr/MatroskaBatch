@@ -18,6 +18,12 @@ import cz.hrnr.matroskabatch.track.Container;
 import cz.hrnr.matroskabatch.track.Track;
 import cz.hrnr.restfilesystem.RESTFileSystem;
 
+/**
+ * Muxing Service
+ * 
+ * @author hrnr
+ *
+ */
 @Path("/muxing")
 public class Muxing {
 	private final Log logger = LogFactory.getLog(Muxing.class);
@@ -27,6 +33,13 @@ public class Muxing {
 	@Inject
 	MuxingService muxingService;
 	
+	/**
+	 * Adds data to muxing queuqe
+	 * 
+	 * Multimedia files will be muxed in future. Muxing might be procceded
+	 * out of order.
+	 * @param data list of containers with assigned tracks to mux
+	 */
 	@PUT
 	@Path("add-to-muxing")
 	@Consumes({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
@@ -48,6 +61,11 @@ public class Muxing {
 		muxingService.addMuxingData(data);
 	}
 	
+	/**
+	 * Gets overall queue status
+	 * 
+	 * @return fraction of finished tasks
+	 */
 	@GET
 	@Path("progress")
 	public double getProgress() {

@@ -22,6 +22,12 @@ import cz.hrnr.matroskabatch.restapi.RESTPath;
 import cz.hrnr.matroskabatch.track.Track;
 import cz.hrnr.restfilesystem.RESTFileSystem;
 
+/**
+ * Media files utilities
+ * 
+ * @author hrnr
+ *
+ */
 @Path("/utils")
 public class Utils {
 	private final Log logger = LogFactory.getLog(Utils.class);
@@ -29,6 +35,15 @@ public class Utils {
 	@Inject
 	RESTFileSystem fs;
 	
+	/**
+	 * Gets tracks from media file.
+	 * 
+	 * Extracts list of tracks that can be muxed by mkvmerge.
+	 * This tracks may represent audio, video or subtitle.
+	 * 
+	 * @param path URI identifying RESTPath as retrieved from this API
+	 * @return list of tracks contained in path
+	 */
 	@GET
 	@Path("tracks")
 	@Produces({ MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON })
@@ -46,6 +61,13 @@ public class Utils {
 		}
 	}
 	
+	/**
+	 * Tells whether given path represents a video
+	 * 
+	 * @param path URI identifying RESTPath as retrieved from this API
+	 * @return true if given path represents video false otherwise
+	 * @throws WebApplicationException if IO error occured on server
+	 */
 	@GET
 	@Path("is-video")
 	@Produces({ MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON })
