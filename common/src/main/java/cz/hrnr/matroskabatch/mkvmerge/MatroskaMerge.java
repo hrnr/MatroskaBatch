@@ -64,7 +64,6 @@ public class MatroskaMerge {
 			logger.debug("executing mkvmerge: " + cmdline);
 		}
 		Process process = pb.start();
-		exit_code = process.waitFor();		
 
 		if (output != null) {
 			try (BufferedReader b = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
@@ -72,6 +71,8 @@ public class MatroskaMerge {
 						.collect(Collectors.toList()));
 			}
 		}
+
+		exit_code = process.waitFor();
 
 		return exit_code;
 	}
