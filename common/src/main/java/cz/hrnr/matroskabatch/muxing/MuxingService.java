@@ -83,7 +83,8 @@ public class MuxingService extends AbstractMuxingService {
 	/**
 	 * Internal method called from workers when finished.
 	 * 
-	 * This method is thread-safe.
+	 * This method is thread-safe. This method will be called
+	 * by concurrent workers.
 	 */
 	synchronized private void taskCompleted() {
 		++completedTasks_;

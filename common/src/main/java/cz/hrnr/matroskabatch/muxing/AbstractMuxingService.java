@@ -12,6 +12,8 @@ import javafx.beans.value.ObservableDoubleValue;
  * into Matroska containers.
  * 
  * Tasks may be executed in any order.
+ * 
+ * Methods are not guaranteed to be thread-safe.
  *
  */
 public abstract class AbstractMuxingService {
@@ -35,6 +37,7 @@ public abstract class AbstractMuxingService {
 	 * @return progress in percents in [0..1]
 	 */
 	public double getProgress() {
+		// progress may be accesed by concurent workers
 		synchronized(progress) {
 			return progress.get();
 		}
@@ -66,7 +69,8 @@ public abstract class AbstractMuxingService {
 	 * Resets progress as if not tasks had been submitted
 	 * to MuxingService.
 	 * 
-	 * This method is not thread-save.
+	 * This method is not thread-save. This should be called only when service
+	 * is not running, i.e. is shutdown.
 	 */
 	public void resetProgress() {
 		completedTasks_ = 0;

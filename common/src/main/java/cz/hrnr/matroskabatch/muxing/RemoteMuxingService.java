@@ -37,9 +37,9 @@ public class RemoteMuxingService extends AbstractMuxingService {
 		target.path("muxing").path("add-to-muxing")
 			.request().put(Entity.xml(dataEntity));
 		
-		synchronized (progress) {
-			progress.set(1);
-		}
+//		no synchronization needed since this is used only here and methods
+//		are not generally guaranteed thread-safe
+		progress.set(1);
 	}
 
 	/**
