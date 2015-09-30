@@ -24,8 +24,8 @@ muxing large media files on media servers etc.
 Running desktop app
 -------------------
 
-MatroskaBatch is Java program. You need Java 8 (Oracle Java or OpenJDK) and
-Java FX to run MatroskaBatch. On debian-based systems run
+MatroskaBatch is Java program. You need Java 8u40 or later (Oracle Java or
+OpenJDK) and Java FX to run MatroskaBatch. On debian-based systems run
 
 	sudo aptitude install openjdk-8-jre openjfx
 
