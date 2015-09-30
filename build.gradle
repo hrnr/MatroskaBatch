@@ -35,7 +35,7 @@ project(':common') {
 
 project(':desktop') {
 	apply plugin: 'application'
-	apply from: 'javafx.plugin'
+	//apply from: 'javafx.plugin'
 
 	dependencies {
 		compile project(':common')
@@ -43,9 +43,9 @@ project(':desktop') {
 
 	mainClassName = 'cz.hrnr.matroskabatch.gui.MatroskaBatch'
 
-	javafx {
-		mainClass = mainClassName
-	}
+	//javafx {
+	//	mainClass = mainClassName
+	//}
 }
 
 project(':server') {
