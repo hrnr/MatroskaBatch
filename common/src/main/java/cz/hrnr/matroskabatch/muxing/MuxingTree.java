@@ -39,10 +39,16 @@ import org.apache.commons.lang3.StringUtils;
 import cz.hrnr.matroskabatch.track.Container;
 import cz.hrnr.matroskabatch.track.MuxingItem;
 import cz.hrnr.matroskabatch.track.Track;
-import cz.hrnr.matroskabath.utils.LocalUtils;
-import cz.hrnr.matroskabath.utils.RemoteUtils;
-import cz.hrnr.matroskabath.utils.Utils;
+import cz.hrnr.matroskabatch.utils.LocalUtils;
+import cz.hrnr.matroskabatch.utils.RemoteUtils;
+import cz.hrnr.matroskabatch.utils.Utils;
 
+/**
+ * Represents set of tracks and their relations for muxing.
+ * 
+ * Associates tracks with appropriate output containers.
+ *
+ */
 public final class MuxingTree {
 
 	// maps masterTrack -> subTracks
@@ -63,11 +69,20 @@ public final class MuxingTree {
 	public void setUtils(Utils utils) {
 		this.utils = utils;
 	}
-
+	
+	/**
+	 * Gets current default output direcotry set for this muxing tree.
+	 * @return output dir
+	 */
 	public Path getOutputDir() {
 		return outputDir_;
 	}
-
+	
+	/**
+	 * @param outputDir
+	 * @throws IOException
+	 * @see {@link #getOutputDir()}
+	 */
 	public void setOutputDir(Path outputDir) throws IOException {
 		outputDir_ = outputDir;
 		// set output for all masterTracks
@@ -127,7 +142,9 @@ public final class MuxingTree {
 	 * @param tracks
 	 */
 	public void addAllSubTracks(List<Track> tracks) {
-		tracks.forEach(x -> addSubTrack(x));
+		for (Track track : tracks) {
+			addSubTrack(track);
+		}
 	}
 
 	/**
@@ -140,7 +157,9 @@ public final class MuxingTree {
 	 * @param tracks
 	 */
 	public void addAllSubTracks(MuxingItem treeTrack, List<Track> tracks) {
-		tracks.forEach(x -> addSubTrack(treeTrack, x));
+		for(Track track : tracks) {
+			addSubTrack(treeTrack, track);
+		}
 	}
 
 	/**
@@ -200,20 +219,55 @@ public final class MuxingTree {
 	/**
 	 * Removes single Track or whole subtree if track t is master track
 	 *
-	 * @param t
+	 * @param muxingItem item to remove
 	 * @return true if succeeded false otherwise
 	 */
-	public boolean removeTrack(MuxingItem t) {
+	public boolean removeTrack(MuxingItem muxingItem) {
+		if (removeMasterTrack(muxingItem)) {
+			// is master track
+			return true;
+		} else if (removeChildTrack(muxingItem)) {
+			// is subTrack
+			return true;
+		} else {
+			// track is not present in tree
+			return false;
+		}
+	}
+	
+	/**
+	 * Removes whole subtree for given master track
+	 * 
+	 * Fails if given muxing item is not a master track
+	 *
+	 * @param muxingItem item to remove
+	 * @return true if succeeded false otherwise
+	 */
+	public boolean removeMasterTrack(MuxingItem muxingItem) {
 		// is master track
-		if (containers_.contains(t)) {
-			Container container = (Container) t;
+		if (containers_.contains(muxingItem)) {
+			Container container = (Container) muxingItem;
 //			remove from reverse mapping
 			container.getChildrenStream().forEach(x -> subtracks_mapping_.remove(x));
 			containers_.remove(container);
 			return true;
-		} else if (subtracks_mapping_.containsKey(t)) { // is subTrack
-			Track track = (Track) t;
-			subtracks_mapping_.get(t).removeChildren(track);
+		} else { // track is not present in tree
+			return false;
+		}
+	}
+	
+	/**
+	 * Removes single Track from tree
+	 * 
+	 * Fails if given muxing item is not simple track
+	 *
+	 * @param muxingItem item to remove
+	 * @return true if succeeded false otherwise
+	 */
+	public boolean removeChildTrack(MuxingItem muxingItem) {
+		if (subtracks_mapping_.containsKey(muxingItem)) { // is subTrack
+			Track track = (Track) muxingItem;
+			subtracks_mapping_.get(muxingItem).removeChildren(track);
 			subtracks_mapping_.remove(track);
 			return true;
 		} else { // track is not present in tree
