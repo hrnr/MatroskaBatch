@@ -33,6 +33,10 @@ import javax.xml.bind.annotation.XmlTransient;
 
 import cz.hrnr.matroskabatch.restapi.RESTPath;
 
+/**
+ * Represents single track in Matroska container
+ *
+ */
 @XmlRootElement
 public final class Track implements MuxingItem {
 
@@ -53,28 +57,54 @@ public final class Track implements MuxingItem {
 		trackID = 0;
 	}
 
-	
+	/**
+	 * Constructs Track from params.
+	 * @param path
+	 * @param trackID
+	 * @param type
+	 * @param properties
+	 */
 	public Track(Path path, int trackID, TrackType type, TrackProperties properties) {
 		this.path = path;
 		this.properties = properties;
 		this.type = type;
 		this.trackID = trackID;
 	}
-
+	
+	/**
+	 * Gets filesystem location of media file this track may
+	 * refer to.
+	 */
 	@Override
 	@XmlTransient
 	public Path getPath() {
 		return path;
 	}
 	
+	/**
+	 * @param path
+	 * @see #getPath()
+	 */
 	public void setPath(Path path) {
 		this.path = path;
 	}
-
+	
+	/**
+	 * Matroska trackID.
+	 * 
+	 * Please refer to
+	 * {@link http://www.bunkus.org/videotools/mkvtoolnix/doc/mkvmerge.html#mkvmerge.track_ids}
+	 * @return track's id
+	 * 
+	 */
 	public int getTrackID() {
 		return trackID;
 	}
-
+	
+	/**
+	 * @param trackID
+	 * @see #getTrackID()
+	 */
 	public void setTrackID(int trackID) {
 		this.trackID = trackID;
 	}
@@ -84,6 +114,10 @@ public final class Track implements MuxingItem {
 		return path.getFileName().toString();
 	}
 	
+	/**
+	 * @param properties
+	 * @see #getProperties()
+	 */
 	public void setProperties(TrackProperties properties) {
 		this.properties = properties;
 	}
@@ -93,6 +127,10 @@ public final class Track implements MuxingItem {
 		return properties;
 	}
 	
+	/**
+	 * @param trackType
+	 * @see #getProperties()
+	 */
 	public void setType(TrackType trackType) {
 		type = trackType;
 	}

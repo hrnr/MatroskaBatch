@@ -27,22 +27,47 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+/**
+ * Represents track's mediatype.
+ * 
+ * track is either one of supported types in Matroska (video, audio, subtitles) or
+ * Matroska container itself.
+ *
+ */
 public enum TrackType {
 
 	CONTAINER(0, Arrays.asList("")),
 	VIDEO(1, Arrays.asList("-A", "-S", "-d")),
 	AUDIO(2, Arrays.asList("-D", "-S", "-a")),
 	SUBTITLES(3, Arrays.asList("-D", "-A", "-s"));
+	
+//	see #getNumVal
+	private final int numVal;
+//	arguments for mkvmerge to catch on this track
+	private final List<String> cmdVal;
 
 	TrackType(int numVal, List<String> cmdVal) {
 		this.numVal = numVal;
 		this.cmdVal = cmdVal;
 	}
 
+	/**
+	 * Gets numeric representation. Has no direct relation
+	 * with Matroska representation, but may be used for consistent sorting etc.
+	 * 
+	 * @return non-negative integer representing order
+	 */
 	public int getNumVal() {
 		return numVal;
 	}
-
+	
+	/**
+	 * Converts to mkvmerge cmdline representation.
+	 * 
+	 * @param trackID mkvmerge trackID 
+	 * {@link http://www.bunkus.org/videotools/mkvtoolnix/doc/mkvmerge.html#mkvmerge.track_ids}
+	 * @return mkvmerge cmdline arguments
+	 */
 	public List<String> toCmdLine(int trackID) {
 		List<String> l = new ArrayList<>(cmdVal);
 		l.add(Integer.toString(trackID));
@@ -54,7 +79,4 @@ public enum TrackType {
 	public String toString() {
 		return super.toString().toLowerCase();
 	}
-
-	private final int numVal;
-	private final List<String> cmdVal;
 }

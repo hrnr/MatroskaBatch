@@ -40,19 +40,25 @@ import cz.hrnr.matroskabatch.track.Track;
 import cz.hrnr.matroskabatch.track.TrackProperties;
 import cz.hrnr.matroskabatch.track.TrackType;
 
+/**
+ * Allows basics operations with mkvmerge utility.
+ * 
+ * Uses mkvmerge binary on system's PATH environment.
+ *
+ */
 public class MatroskaMerge {
 	private static final Log logger = LogFactory.getLog(MatroskaMerge.class); 
 
 	/**
 	 * Runs mkvmerge with args
 	 *
-	 * @param args
+	 * @param args arguments that will be passed to mkvmerge
 	 * @param output Command output as lines
-	 * @return exit code
+	 * @return exit code {@link http://www.bunkus.org/videotools/mkvtoolnix/doc/mkvmerge.html#mkvmerge.exit_codes}
 	 * @throws IOException
 	 * @throws InterruptedException
 	 */
-	public static int MkvMerge(List<String> args, List<String> output) throws IOException, InterruptedException {
+	public static int mkvMerge(List<String> args, List<String> output) throws IOException, InterruptedException {
 		List<String> cmdline = new ArrayList<>();
 		cmdline.add("mkvmerge");
 		cmdline.addAll(args);
@@ -80,12 +86,12 @@ public class MatroskaMerge {
 	/**
 	 * Checks is mkvmerge is available at standard PATH
 	 *
-	 * @return
+	 * @return true is mkvmerge is available, false otherwise
 	 * @throws IOException
 	 * @throws InterruptedException
 	 */
 	public static boolean available() throws IOException, InterruptedException {
-		return MkvMerge(Arrays.asList("-V"), null) == 0;
+		return mkvMerge(Arrays.asList("-V"), null) == 0;
 	}
 
 	/**
@@ -103,7 +109,7 @@ public class MatroskaMerge {
 		List<String> output = new ArrayList<>();
 		int exit_code;
 
-		exit_code = MkvMerge(Arrays.asList("-i", p.toAbsolutePath().toString()), output);
+		exit_code = mkvMerge(Arrays.asList("-i", p.toAbsolutePath().toString()), output);
 
 		if (exit_code != 0) {
 			return l;
@@ -116,31 +122,38 @@ public class MatroskaMerge {
 				.forEach(x -> {
 					// TODO fetch track properties
 					l.add(
-							new Track(
-									p.toAbsolutePath(),
-									Integer.parseInt(x[2].replace(":", "")),
-									TrackType.valueOf(x[3].toUpperCase()),
-									new TrackProperties()));
+						new Track(
+							p.toAbsolutePath(),
+							Integer.parseInt(x[2].replace(":", "")),
+							TrackType.valueOf(x[3].toUpperCase()),
+							new TrackProperties()));
 				});
 
 		return l;
 	}
-
+	
+	/**
+	 * Calls mkvmerge with muxing arguments to proceed gives files
+	 * according to given data
+	 * 
+	 * @param container muxing data to proceed
+	 * @throws IOException
+	 * @throws InterruptedException
+	 */
 	public static void muxTracks(Container container) throws IOException, InterruptedException {
-		List<String> output = null;
-		if(logger.isDebugEnabled())
-			output = new ArrayList<>();
 		List<String> cmdline = new ArrayList<>();
 		List<Track> tracks = container.getChildrenAsList();
 		boolean exit_failed;
 
 		cmdline.addAll(container.toCmdLine());
-		tracks.forEach(x -> cmdline.addAll(x.toCmdLine()));
+		for(Track track : tracks) {
+			cmdline.addAll(track.toCmdLine());
+		}
 
-		exit_failed = MkvMerge(cmdline, null) == 2;
+		exit_failed = mkvMerge(cmdline, null) == 2;
 
 		if (exit_failed) {
-			throw new IOException("mkvmerge execution failed: " + output);
+			throw new IOException("mkvmerge execution failed");
 		}
 	}
 }

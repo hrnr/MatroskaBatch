@@ -36,6 +36,14 @@ import org.apache.commons.logging.LogFactory;
 import cz.hrnr.matroskabatch.mkvmerge.MatroskaMerge;
 import cz.hrnr.matroskabatch.track.Container;
 
+/**
+ * Muxing service for local muxing.
+ * 
+ * Service will run in as many parallel threads a runtime provides
+ * 
+ * @see Runtime#availableProcessors()
+ *
+ */
 @Singleton
 public class MuxingService extends AbstractMuxingService {
 	private static final Log logger = LogFactory.getLog(MuxingService.class);
@@ -46,12 +54,14 @@ public class MuxingService extends AbstractMuxingService {
 	}
 	
 	/**
-	 * Add whole tree to muxing queue
+	 * Add muxing data to muxing queue
+	 * 
+	 * This method may not be thread-safe.
 	 *
 	 * @param tree
 	 */
 	@Override
-	synchronized public void addMuxingData(List<Container> data) {
+	public void addMuxingData(List<Container> data) {
 		if(service.isShutdown())
 			initService();
 		
@@ -69,18 +79,29 @@ public class MuxingService extends AbstractMuxingService {
 				});
 		}
 	}
-
+	
+	/**
+	 * Internal method called from workers when finished.
+	 * 
+	 * This method is thread-safe.
+	 */
 	synchronized private void taskCompleted() {
 		++completedTasks_;
 		progress.set((double) completedTasks_ / totalTasks_);
 	}
 
 	@Override
-	synchronized public void shutdown() {
+	public void shutdown() {
 		service.shutdownNow();
 	}
 	
-	synchronized private void initService() {
+	/**
+	 * (Re)initializes executing service
+	 * 
+	 * This method is not thread-safe.
+	 * 
+	 */
+	private void initService() {
 		service = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
 	}
 }

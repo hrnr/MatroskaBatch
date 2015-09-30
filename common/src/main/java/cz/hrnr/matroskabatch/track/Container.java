@@ -40,8 +40,11 @@ import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 
 import cz.hrnr.matroskabatch.restapi.RESTPath;
-import cz.hrnr.matroskabath.utils.Utils;
+import cz.hrnr.matroskabatch.utils.Utils;
 
+/**
+ * Represents Matroska container
+ */
 @XmlRootElement
 public final class Container implements MuxingItem {
 
@@ -75,17 +78,30 @@ public final class Container implements MuxingItem {
 		tracks = new TreeSet<>();
 		setOutputDir(outputDir, utils);
 	}
-
+	
+	/**
+	 * Tracks in this container
+	 * @return all tracks in container
+	 */
 	@XmlElementWrapper(name = "tracks")
 	@XmlElement(name = "track")
 	public Collection<Track> getChildren() {
 		return tracks;
 	}
-
+	
+	/**
+	 * Oroginal filename associated with previous mediafile
+	 * this container may refer to
+	 * @return previous filename
+	 */
 	public Path getOriginalFileName_() {
 		return originalFileName;
 	}
 	
+	/**
+	 * @param path
+	 * @see #getPath()
+	 */
 	public void setPath(Path path) {
 		fileName = path;
 	}
@@ -110,7 +126,15 @@ public final class Container implements MuxingItem {
 	public TrackType getType() {
 		return TrackType.CONTAINER;
 	}
-
+	
+	/**
+	 * Sets directory where this container should be saved in case
+	 * it will be written as output container
+	 * 
+	 * @param outputDir
+	 * @param utils filesystem utils to use
+	 * @throws IOException
+	 */
 	public void setOutputDir(Path outputDir, Utils utils) throws IOException {
 		assert Files.isDirectory(outputDir);
 
@@ -126,19 +150,35 @@ public final class Container implements MuxingItem {
 	public List<String> toCmdLine() {
 		return Arrays.asList("-o", fileName.toAbsolutePath().toString());
 	}
-
+	
+	/**
+	 * Adds new track to container
+	 * @param t track to add
+	 */
 	public void addChildren(Track t) {
 		tracks.add(t);
 	}
-
+	
+	/**
+	 * Removes track from container
+	 * @param t track to remove
+	 */
 	public void removeChildren(Track t) {
 		tracks.remove(t);
 	}
-
+	
+	/**
+	 * Returns tracks in this container as List
+	 * @return list of tracks in container
+	 */
 	public List<Track> getChildrenAsList() {
 		return new ArrayList<>(tracks);
 	}
-
+	
+	/**
+	 * Return lazily populated stream of tracks in this container
+	 * @return stream on tracks in container
+	 */
 	public Stream<Track> getChildrenStream() {
 		return tracks.stream();
 	}

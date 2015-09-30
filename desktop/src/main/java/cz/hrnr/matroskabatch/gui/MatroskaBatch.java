@@ -29,6 +29,10 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 
+/**
+ * Enter point of application
+ *
+ */
 public class MatroskaBatch extends Application {
 	private MainWinController controller;
 

@@ -32,6 +32,13 @@ import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
 import javafx.stage.Window;
 
+/**
+ * Presents user default system's file choosers to select
+ * entries from local filesystem.
+ * 
+ * THis class remembers last selected entries.
+ *
+ */
 public class LocalFileChoosers implements FileChoosers {
 	public LocalFileChoosers() {
 		dc = new DirectoryChooser();

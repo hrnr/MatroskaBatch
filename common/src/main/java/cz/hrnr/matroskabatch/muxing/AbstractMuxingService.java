@@ -7,6 +7,13 @@ import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.value.ObservableDoubleValue;
 
+/**
+ * Executing service which muxes provided muxing data
+ * into Matroska containers.
+ * 
+ * Tasks may be executed in any order.
+ *
+ */
 public abstract class AbstractMuxingService {
 
 	protected int totalTasks_ = 0;
@@ -19,32 +26,58 @@ public abstract class AbstractMuxingService {
 	public AbstractMuxingService() {
 		super();
 	}
-
-	public synchronized double getProgress() {
-		return progress.get();
+	
+	/**
+	 * Gets overall progress, i.e. number of proceeded tasks vs.
+	 * all scheduled tasks.
+	 * 
+	 * This method is thread-safe.
+	 * @return progress in percents in [0..1]
+	 */
+	public double getProgress() {
+		synchronized(progress) {
+			return progress.get();
+		}
 	}
 
 	/**
 	 * Property indicating completed tasks of this service
 	 *
-	 * This is value in [0, 1] indication number of completed tasks in percent
+	 * This is value in [0..1] indication number of completed tasks in percent
 	 *
 	 * @return
 	 */
 	public ObservableDoubleValue progressProperty() {
 		return progress;
 	}
-
-	public synchronized void addTree(MuxingTree tree) {
+	
+	/**
+	 * Convenient method for adding muxing data to service.
+	 * 
+	 * Same as calling #addMuxingData() with {@link MuxingTree#getMuxingData()}
+	 * 
+	 * @param tree
+	 */
+	public void addTree(MuxingTree tree) {
 		addMuxingData(tree.getMuxingData());
 	}
-
-	public synchronized void resetProgress() {
+	
+	/**
+	 * Resets progress as if not tasks had been submitted
+	 * to MuxingService.
+	 * 
+	 * This method is not thread-save.
+	 */
+	public void resetProgress() {
 		completedTasks_ = 0;
 		progress = new SimpleDoubleProperty(0);
 		totalTasks_ = 0;
 	}
-
+	
+	/**
+	 * Stops MuxingService from processing further tasks. Service
+	 * may or may not complete tasks that has been already started.
+	 */
 	public abstract void shutdown();
 
 }

@@ -19,6 +19,11 @@ import org.apache.commons.logging.LogFactory;
 
 import cz.hrnr.matroskabatch.restapi.RESTPath;
 
+/**
+ * Mapper from local paths to paths which will presented
+ * in REST api interface and vice versa.
+ *
+ */
 @Singleton
 public class RESTFileSystem {
 	private final Log logger = LogFactory.getLog(RESTFileSystem.class);
@@ -26,6 +31,13 @@ public class RESTFileSystem {
 	private Path root;
 	private URI restRoot;
 	
+	/**
+	 * Constructs this class.
+	 * 
+	 * Gathers info from context to establish root of remote filesysytem.
+	 * 
+	 * @param context ServletContext with defined mediaRoot and rootURI
+	 */
 	public RESTFileSystem(@Context ServletContext context) {
 		String mediaRoot = context.getInitParameter("mediaRoot");
 		String defaultURI = context.getInitParameter("rootURI");
@@ -51,6 +63,10 @@ public class RESTFileSystem {
 				
 	}
 	
+	/**
+	 * Construct class from provided root.
+	 * @param root root to use as root of remote filesystem.
+	 */
 	public RESTFileSystem(Path root) {
 		this.root = root;
 		try {
@@ -60,6 +76,11 @@ public class RESTFileSystem {
 		}
 	}
 	
+	/**
+	 * Maps from local path to remote path
+	 * @param path local path
+	 * @return remote path
+	 */
 	public RESTPath getRESTPath(Path path) {
 		RESTPath restPath = new RESTPath();
 		String relativePath = root.relativize(path).toString();
@@ -75,6 +96,11 @@ public class RESTFileSystem {
 		return restPath;
 	}
 	
+	/**
+	 * Maps from remote URI to local path
+	 * @param path URI from RESTPath object as returned from this API
+	 * @return local path
+	 */
 	public Path getPath(URI path) {
 		if (logger.isDebugEnabled()) 
 			logger.debug("resolving path for: " + path.toString());
@@ -94,6 +120,10 @@ public class RESTFileSystem {
 		return file;
 	}
 	
+	/**
+	 * Gets remote path representing root of remote filesystem.
+	 * @return remote path
+	 */
 	public RESTPath getRESTRoot() {
 		RESTPath root = new RESTPath();
 		root.setDirectory(true);
@@ -102,6 +132,10 @@ public class RESTFileSystem {
 		return root;
 	}
 	
+	/**
+	 * Gets local path used as root of this remote filesystem
+	 * @return local path
+	 */
 	public Path getRoot() {
 		return root;
 	}

@@ -1,4 +1,4 @@
-package cz.hrnr.matroskabath.utils;
+package cz.hrnr.matroskabatch.utils;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -9,6 +9,13 @@ import java.util.stream.Collectors;
 import cz.hrnr.matroskabatch.mkvmerge.MatroskaMerge;
 import cz.hrnr.matroskabatch.track.Track;
 
+/**
+ * Wrapper around standard library functions to
+ * provide Utils interface.
+ * 
+ * Basic functions using local filesystem.
+ *
+ */
 public class LocalUtils extends Utils {
 	
 	@Override

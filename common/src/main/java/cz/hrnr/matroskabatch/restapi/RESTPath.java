@@ -15,6 +15,16 @@ import java.util.Iterator;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 
+/**
+ * Wraps basic path repsentation from MatroskaBatchMergeServer
+ * API into Path interface.
+ * 
+ * WARNING: This is just a simple wrapper, not full-blown part of Java filesystem api,
+ * most methods will throw {@link UnsupportedOperationException}. You should call only
+ * methods from Path interface that are explicitely mentioned as save to use on this
+ * wrapper.
+ *
+ */
 @XmlRootElement
 public class RESTPath implements Path, Cloneable {
 	private URI path;
@@ -29,25 +39,55 @@ public class RESTPath implements Path, Cloneable {
 		this.directory = directory;
 		this.originalFileName = originalFileName;
 	}
-
+	
+	/**
+	 * Gets URI repsenting resource location in API.
+	 * @return file location
+	 */
 	public URI getPath() {
 		return path;
 	}
+
+	/**
+	 * @see #getPath()
+	 */
+
 	public void setPath(URI path) {
 		this.path = path;
 	}
+
+	/**
+	 * Flag indicating if this path represents a directory
+	 * @return true if this path represents a directory, false otherwise
+	 */
 	public boolean isDirectory() {
 		return directory;
 	}
+
+	/**
+	 * @param directory true if this path represents a directory, false otherwise
+	 * @see #isDirectory()
+	 */
 	public void setDirectory(boolean directory) {
 		this.directory = directory;
 	}
+
+	/**
+	 * Original filename of remote resource
+	 * @return filename as string as interpreted by remote system
+	 */
 	public String getOriginalFileName() {
 		return originalFileName;
 	}
+
+	/**
+	 * @param originalFileName
+	 * @see #getOriginalFileName()
+	 */
 	public void setOriginalFileName(String originalFileName) {
 		this.originalFileName = originalFileName;
 	}
+
 	@Override
 	public FileSystem getFileSystem() {
 		throw new UnsupportedOperationException();
@@ -60,6 +100,14 @@ public class RESTPath implements Path, Cloneable {
 	public Path getRoot() {
 		throw new UnsupportedOperationException();
 	}
+	/**
+	 * Save to call on this wrapper.
+	 * 
+	 * Return always the same object since all
+	 * paths are absolute in MatroskaBatch api.
+	 * 
+	 * @return always this
+	 */
 	@Override
 	public Path getFileName() {
 		return this;
@@ -121,6 +169,11 @@ public class RESTPath implements Path, Cloneable {
 	public Path relativize(Path other) {
 		throw new UnsupportedOperationException();
 	}
+	/**
+	 * Save to call on this wrapper.
+	 * 
+	 * Same as {@link #getPath()}
+	 */
 	@Override
 	public URI toUri() {
 		return path;
@@ -154,11 +207,17 @@ public class RESTPath implements Path, Cloneable {
 		throw new UnsupportedOperationException();
 	}
 	
+	/**
+	 * Save to call on this wrapper.
+	 */
 	@Override
 	protected RESTPath clone() {
 		return new RESTPath(path, directory, originalFileName);
 	}
 	
+	/**
+	 * Save to call on this wrapper.
+	 */
 	@Override
 	public String toString() {
 		return originalFileName;

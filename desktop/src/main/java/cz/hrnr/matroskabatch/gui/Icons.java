@@ -28,29 +28,53 @@ import cz.hrnr.matroskabatch.track.MuxingItem;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 
+/**
+ * Wrapper for icons resources used in GUI
+ *
+ */
 public class Icons {
 	private static Image videoIcon = new Image("/icons/video.png");
 	private static Image audioIcon = new Image("/icons/audio.png");
 	private static Image subtitlesIcon = new Image("/icons/subtitles.png");
 	private static Image directoryIcon = new Image("/icons/folder.png");
 	private static Image fileIcon = new Image("/icons/text-x-generic.png");
-
+	
+	/**
+	 * Gets icon representing video track
+	 * @return icon
+	 */
 	public static ImageView getVideoIcon() {
 		return new ImageView(videoIcon);
 	}
-
+	
+	/**
+	 * Gets icon representing audio track
+	 * @return icon
+	 */
 	public static ImageView getAudioIcon() {
 		return new ImageView(audioIcon);
 	}
-
+	
+	/**
+	 * Gets icon representing subtitles track
+	 * @return icon
+	 */
 	public static ImageView getSubtitlesIcon() {
 		return new ImageView(subtitlesIcon);
 	}
-	
+
+	/**
+	 * Gets icon representing directory
+	 * @return icon
+	 */
 	public static ImageView getDirectoryIcon() {
 		return new ImageView(directoryIcon);
 	}
-	
+
+	/**
+	 * Gets icon representing file
+	 * @return icon
+	 */
 	public static ImageView getFileIcon() {
 		return new ImageView(fileIcon);
 	}
@@ -73,6 +97,12 @@ public class Icons {
 		}
 	}
 	
+	/**
+	 * Returns icon appropriate for path. Either file icon or
+	 * direcotry icon.
+	 * @param path
+	 * @return selected icon
+	 */
 	public static ImageView getIcon(RESTPath path) {
 		if(path.isDirectory()) {
 			return Icons.getDirectoryIcon();

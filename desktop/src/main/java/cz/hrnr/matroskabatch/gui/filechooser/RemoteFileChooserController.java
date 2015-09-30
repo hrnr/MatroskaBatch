@@ -10,7 +10,7 @@ import java.util.stream.Collectors;
 import cz.hrnr.matroskabatch.gui.DialogHelpers;
 import cz.hrnr.matroskabatch.gui.Icons;
 import cz.hrnr.matroskabatch.restapi.RESTPath;
-import cz.hrnr.matroskabath.utils.RemoteUtils;
+import cz.hrnr.matroskabatch.utils.RemoteUtils;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -35,6 +35,10 @@ import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.util.Callback;
 
+/**
+ * JavaFX controller for file chooser dialog.
+ *
+ */
 public class RemoteFileChooserController implements Initializable {
 	private RemoteUtils remoteUtils;
 	private DialogHelpers dialogHelpers = new DialogHelpers();
@@ -57,6 +61,10 @@ public class RemoteFileChooserController implements Initializable {
 		this.remoteUtils = remoteUtils;
 	}
 	
+	/**
+	 * Gets directory where user finished selection
+	 * @return direcotry where selection finished
+	 */
 	public Path getResultDirectory() {
 		return currentPath;
 	}
@@ -119,7 +127,12 @@ public class RemoteFileChooserController implements Initializable {
 			prgIndicator.setVisible(false);
 		}
 	}
-
+	
+	/**
+	 * Shows dialog and waits for result.
+	 * @param multiselect if selection of multiple items should be allowed
+	 * @return entries selected by user
+	 */
 	@SuppressWarnings("unchecked")
 	public List<RESTPath> showAndWait(boolean multiselect) {
 		this.multiselect = multiselect;

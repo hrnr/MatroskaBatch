@@ -23,6 +23,11 @@
  */
 package cz.hrnr.matroskabatch.track.properties;
 
+/**
+ * Represents boolean Matroska property
+ * 
+ * @see mkvpropedit -l
+ */
 public enum BoolProperty {
 
 	DEFAULT, YES, NO;
@@ -31,7 +36,11 @@ public enum BoolProperty {
 	public String toString() {
 		return super.toString().toLowerCase();
 	}
-
+	
+	/**
+	 * Converts to mkvmerge cmdline options
+	 * @return cmdline options for mkvmerge
+	 */
 	public String toCmdLine() {
 		switch (this) {
 			case DEFAULT:

@@ -1,4 +1,4 @@
-package cz.hrnr.matroskabath.utils;
+package cz.hrnr.matroskabatch.utils;
 
 import java.io.IOException;
 import java.net.URI;
@@ -18,9 +18,19 @@ import cz.hrnr.matroskabatch.restapi.RESTBoolean;
 import cz.hrnr.matroskabatch.restapi.RESTPath;
 import cz.hrnr.matroskabatch.track.Track;
 
+/**
+ * Utilities which remoted to MatroskaBatchServer rest API
+ * and gathers information from server rather than from local
+ * filesystem
+ *
+ */
 public class RemoteUtils extends Utils {
 	private WebTarget target;
 	
+	/**
+	 * Creates instance of RemoteUtils
+	 * @param uri URI of MatroskabatchServer rest api
+	 */
 	public RemoteUtils(URI uri) {
 		Client client = ClientBuilder.newClient();
 		target = client.target(uri);
@@ -61,6 +71,11 @@ public class RemoteUtils extends Utils {
 		return directoryContent;
 	}
 	
+	/**
+	 * Gets root of remote filesystem
+	 * @return root
+	 * @throws IOException
+	 */
 	public RESTPath getRemoteRoot() throws IOException {
 		RESTPath response = target.path("filesystem").path("root")
 				.request().get(RESTPath.class);
@@ -82,10 +97,20 @@ public class RemoteUtils extends Utils {
 				.request().get(RESTPath.class);
 	}
 	
+	/**
+	 * Encodes query parameter according to RFC
+	 * @param path path which URI will be encoded as query parameter
+	 * @return encoded URI part
+	 */
 	private String encodeQueryParam(Path path) {
 		return UriComponent.encode(path.toUri().toString(), Type.QUERY_PARAM_SPACE_ENCODED);
 	}
 	
+	/**
+	 * Encodes query parameter according to RFC
+	 * @param param parameter to encode
+	 * @return encoded URI part
+	 */
 	private String encodeQueryParam(String param) {
 		return UriComponent.encode(param, Type.QUERY_PARAM_SPACE_ENCODED);
 	}

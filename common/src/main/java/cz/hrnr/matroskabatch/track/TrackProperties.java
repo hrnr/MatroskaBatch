@@ -31,9 +31,15 @@ import java.util.List;
 
 import javax.xml.bind.annotation.XmlRootElement;
 
+/**
+ * Represents some of tracks properties track can have in Matroska
+ * container
+ *  
+ * @see mkvpropedit -l
+ */
 @XmlRootElement
 public class TrackProperties {
-	
+//	matroska properties
 	protected String name;
 	protected LangProperty language;
 	protected BoolProperty defaultF;
@@ -48,7 +54,14 @@ public class TrackProperties {
 		this.defaultF = BoolProperty.DEFAULT;
 		this.forcedF = BoolProperty.NO;
 	}
-
+	
+	/**
+	 * Initilizes properties with provided values
+	 * @param name
+	 * @param language
+	 * @param defaultF
+	 * @param forcedF
+	 */
 	public TrackProperties(String name, LangProperty language, BoolProperty defaultF, BoolProperty forcedF) {
 		this.name = name;
 		this.language = language;
@@ -57,7 +70,7 @@ public class TrackProperties {
 	}
 
 	/**
-	 * @return the name
+	 * @return Name: A human-readable track name.
 	 */
 	public String getName() {
 		return name;
@@ -71,7 +84,8 @@ public class TrackProperties {
 	}
 
 	/**
-	 * @return the language
+	 * @return Language: Specifies the language of the track in the
+	 * Matroska languages form.
 	 */
 	public LangProperty getLanguage() {
 		return language;
@@ -85,7 +99,8 @@ public class TrackProperties {
 	}
 
 	/**
-	 * @return the defaultF
+	 * @return 'Default track' flag: Set if that track (audio, video or subs)
+	 *  SHOULD be used if no language found matches the user preference.
 	 */
 	public BoolProperty getDefaultF() {
 		return defaultF;
@@ -99,7 +114,11 @@ public class TrackProperties {
 	}
 
 	/**
-	 * @return the forcedF
+	 * @return 'Forced display' flag: Set if that track MUST be used
+	 * during playback. There can be many forced track for a kind 
+	 * (audio, video or subs). The player should select the one 
+	 * whose language matches the user preference or the default 
+	 * + forced track.
 	 */
 	public BoolProperty getForcedF() {
 		return forcedF;
@@ -111,7 +130,14 @@ public class TrackProperties {
 	public void setForcedF(BoolProperty forcedF) {
 		this.forcedF = forcedF;
 	}
-
+	
+	/**
+	 * Creates arguments for mkvmerge representing stored properties.
+	 * 
+	 * @param trackID Matroska track ID
+	 * {@link http://www.bunkus.org/videotools/mkvtoolnix/doc/mkvmerge.html#mkvmerge.track_ids}
+	 * @return mkvmerge cmdline
+	 */
 	public List<String> toCmdLine(int trackID) {
 		List<String> cmdline = new ArrayList<>();
 

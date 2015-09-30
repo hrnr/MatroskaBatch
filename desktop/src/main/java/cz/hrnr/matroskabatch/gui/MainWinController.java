@@ -45,9 +45,9 @@ import cz.hrnr.matroskabatch.track.MuxingItem;
 import cz.hrnr.matroskabatch.track.TrackProperties;
 import cz.hrnr.matroskabatch.track.properties.BoolProperty;
 import cz.hrnr.matroskabatch.track.properties.LangProperty;
-import cz.hrnr.matroskabath.utils.LocalUtils;
-import cz.hrnr.matroskabath.utils.RemoteUtils;
-import cz.hrnr.matroskabath.utils.Utils;
+import cz.hrnr.matroskabatch.utils.LocalUtils;
+import cz.hrnr.matroskabatch.utils.RemoteUtils;
+import cz.hrnr.matroskabatch.utils.Utils;
 import javafx.application.Platform;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
@@ -62,6 +62,10 @@ import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
 import javafx.stage.Window;
 
+/**
+ * JavaFX Window controller of main application window
+ *
+ */
 public class MainWinController implements Initializable {
 
 	// tree managing muxing order

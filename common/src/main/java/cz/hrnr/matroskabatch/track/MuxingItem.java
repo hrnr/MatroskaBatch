@@ -26,11 +26,45 @@ package cz.hrnr.matroskabatch.track;
 import java.nio.file.Path;
 import java.util.List;
 
+/**
+ * Represents muxable track by mkvmerge. Either mkv container itself
+ * or supported media track.
+ *
+ */
 public interface MuxingItem extends Comparable<MuxingItem> {
+	/**
+	 * Gets filesystem location of track or container item is included in.
+	 * @return path to mediafile containing muxing item
+	 */
 	public Path getPath();
+	
+	/**
+	 * Convenient method for getting filename of underlining mediafile.
+	 * 
+	 * Same as {@link #getPath()}.getFilename()
+	 * 
+	 * @return filename
+	 */
 	public String getFileName();
+
+	/**
+	 * Returns properties associated with item
+	 * 
+	 * May be null if muxing item couldn't provide relevat properties.
+	 * @return properties
+	 */
 	public TrackProperties getProperties();
+
+	/**
+	 * Returns item's mediatype(video, audio, subs etc.) or container type
+	 * @return type of underlinig track or container
+	 */
 	public TrackType getType();
+
+	/**
+	 * Converts to mkvmerge cmdline representation
+	 * @return mkvmerge cmdline arguments
+	 */
 	public List<String> toCmdLine();
 
 	@Override
