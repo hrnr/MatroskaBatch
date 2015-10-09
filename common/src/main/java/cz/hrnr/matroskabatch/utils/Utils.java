@@ -95,7 +95,7 @@ public abstract class Utils {
 			new_name = muxableFile.getFileName() + ".mkv";
 		}
 
-		if (outputDir == null || outputDir.equals(muxableFile.getParent())) {
+		if (outputDir == null || outputDir.equals(getFileParent(muxableFile))) {
 			// output will be in current directory
 			if (MATROSKA_EXT.matcher(muxableFile.getFileName().toString()).matches()) {
 				// it has mkv extension - sanitize
