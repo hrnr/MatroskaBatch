@@ -1,6 +1,7 @@
 package cz.hrnr.matroskabatch.muxing;
 
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import cz.hrnr.matroskabatch.track.Container;
 import javafx.beans.property.DoubleProperty;
@@ -13,21 +14,22 @@ import javafx.beans.value.ObservableDoubleValue;
  * 
  * Tasks may be executed in any order.
  * 
- * Methods are not guaranteed to be thread-safe.
+ * Methods are not generally guaranteed to be thread-safe.
+ * However implementations may guarantee thread-safety of some methods.
  *
  */
 public abstract class AbstractMuxingService {
-
-	protected int totalTasks_ = 0;
-
-	public abstract void addMuxingData(List<Container> data);
-
-	protected int completedTasks_ = 0;
+	protected AtomicInteger totalTasks = new AtomicInteger(0);
+	protected AtomicInteger completedTasks = new AtomicInteger(0);
+//	access to progress property should be synchronized
 	protected DoubleProperty progress = new SimpleDoubleProperty(0);
-
-	public AbstractMuxingService() {
-		super();
-	}
+	
+	/**
+	 * Add muxing data to muxing queue
+	 *
+	 * @param data containers to mux
+	 */
+	public abstract void addMuxingData(List<Container> data);
 	
 	/**
 	 * Gets overall progress, i.e. number of proceeded tasks vs.
@@ -73,9 +75,11 @@ public abstract class AbstractMuxingService {
 	 * is not running, i.e. is shutdown.
 	 */
 	public void resetProgress() {
-		completedTasks_ = 0;
-		progress = new SimpleDoubleProperty(0);
-		totalTasks_ = 0;
+		completedTasks.set(0);
+		totalTasks.set(0);
+		synchronized (progress) {
+			progress.set(0);
+		}
 	}
 	
 	/**

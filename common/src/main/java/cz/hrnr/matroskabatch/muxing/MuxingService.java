@@ -39,7 +39,9 @@ import cz.hrnr.matroskabatch.track.Container;
 /**
  * Muxing service for local muxing.
  * 
- * Service will run in as many parallel threads a runtime provides
+ * Service will run in as many parallel threads a runtime provides.
+ * 
+ * This class is thread-safe, excluding initialization and shutdown.
  * 
  * @see Runtime#availableProcessors()
  *
@@ -56,7 +58,8 @@ public class MuxingService extends AbstractMuxingService {
 	/**
 	 * Add muxing data to muxing queue
 	 * 
-	 * This method may not be thread-safe.
+	 * This method is thread-safe if service is initialized.
+	 * ({@link MuxingService#isShutdown()} is false)
 	 *
 	 * @param tree
 	 */
@@ -66,7 +69,7 @@ public class MuxingService extends AbstractMuxingService {
 			initService();
 		
 		for (Container container : data) {
-			++totalTasks_;
+			totalTasks.incrementAndGet();
 			service.execute(
 				// Runnable instance here
 				() -> {
@@ -86,9 +89,19 @@ public class MuxingService extends AbstractMuxingService {
 	 * This method is thread-safe. This method will be called
 	 * by concurrent workers.
 	 */
-	synchronized private void taskCompleted() {
-		++completedTasks_;
-		progress.set((double) completedTasks_ / totalTasks_);
+	private void taskCompleted() {
+		completedTasks.incrementAndGet();
+		synchronized (progress) {
+			progress.set(completedTasks.doubleValue() / totalTasks.get());
+		}
+	}
+	
+	/**
+	 * Returns true if this Service has been shut down.
+	 * @return true if this Service has been shut down
+	 */
+	public boolean isShutdown() {
+		return service.isShutdown();
 	}
 
 	@Override

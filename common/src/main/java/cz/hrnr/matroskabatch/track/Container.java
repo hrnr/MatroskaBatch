@@ -24,7 +24,6 @@
 package cz.hrnr.matroskabatch.track;
 
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -136,8 +135,6 @@ public final class Container implements MuxingItem {
 	 * @throws IOException
 	 */
 	public void setOutputDir(Path outputDir, Utils utils) throws IOException {
-		assert Files.isDirectory(outputDir);
-
 		fileName = utils.getDefaultOutput(outputDir, originalFileName);
 	}
 
