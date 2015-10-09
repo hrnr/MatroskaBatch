@@ -200,9 +200,13 @@ public class MainWinController implements Initializable {
 
 	@FXML
 	private void startMuxing(ActionEvent e) {
+		List<Container> muxingData = t.getMuxingData();
 		pgbBottom.setProgress(0);
 		mnbStopMux.setDisable(false);
 		mnbStartMux.setDisable(true);
+//		removes everything from tree so it can't be modified while it is
+//		processed by muxing service
+		removeAll(e);
 
 		muxingService.progressProperty().addListener(
 				(ObservableValue<? extends Number> observable, Number oldValue, Number newValue)
@@ -213,7 +217,8 @@ public class MainWinController implements Initializable {
 					}
 				})
 		);
-		muxingService.addTree(t);
+		
+		muxingService.addMuxingData(muxingData);
 	}
 
 	@FXML
